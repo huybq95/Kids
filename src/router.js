@@ -7,7 +7,7 @@ import History from './screens/history';
 import Topic from './screens/topic';
 import Setting from './screens/setting';
 
-export default TabNavigator(
+const tabRoot = TabNavigator(
     {
         Lesson: { screen: Lesson },
         History: { screen: History, title: 'Lịch sử' },
@@ -45,13 +45,13 @@ export default TabNavigator(
         tabBarComponent: TabBarBottom,
         tabBarPosition: 'bottom',
         animationEnabled: true,
-        swipeEnabled: true,
+        swipeEnabled: false,
     }
 );
 
-// export default StackNavigator({
-//     screen: {
-//         screen: tabRoot,
-//         // navigationOptions: { title: 'GlennDoman' }
-//     }
-// })
+export default StackNavigator({
+    screen: {
+        screen: tabRoot,
+        navigationOptions: { title: 'GlennDoman' }
+    }
+})
