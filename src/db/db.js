@@ -80,7 +80,6 @@ export function getListTopic(cb) {
         if (err) {
             console.log('Cant get list topic: ', err)
         } else {
-            console.log('TOPIC: ', res)
             topics = res;
             cb && cb(topics);
         }
@@ -95,6 +94,20 @@ export function getListWordOfTopic(title, cb) {
         } else {
             words = res.words;
             cb && cb(words)
+        }
+    })
+}
+
+export function createNewWord(topic, word) {
+    let wordObj = {};
+    wordObj.text = word;
+    wordObj.isCompleted = false;
+    wordObj.isLearning = false;
+    db.update({type: 'topic', title: topic}, { $push: { words: wordObj} }, (err, res) => {
+        if (err) {
+            console.log('Cant add new word: ', err)
+        } else {
+            console.log('Create new word success')
         }
     })
 }

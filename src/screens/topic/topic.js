@@ -46,7 +46,7 @@ export default class Topic extends React.PureComponent {
   }
 
   componentWillMount() {
-    this.loadData()
+    this.loadData();
   }
 
   loadData() {
@@ -85,8 +85,8 @@ export default class Topic extends React.PureComponent {
     let { listTopic, visibleModal } = this.state;
     return (
       <View style={styles.container}>
-        <FlatList data={listTopic}
-          renderItem={({ item }) => <TopicItem navigation={this.props.navigation} key={item._id} data={item} />}
+        <FlatList data={listTopic} extraData={this.state}
+          renderItem={({ item }) => <TopicItem loadData={this.loadData.bind(this)} navigation={this.props.navigation} key={item._id} data={item} />}
         ></FlatList>
         <Modal style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
           onBackButtonPress={() => this.closeModal()}
@@ -123,7 +123,7 @@ export default class Topic extends React.PureComponent {
             </TouchableWithoutFeedback>
           </KeyboardAvoidingView>
         </Modal>
-        <Fab openModal={this.openModal.bind(this)}/>
+        <Fab openModal={this.openModal.bind(this)} />
       </View>
     );
   }
@@ -133,16 +133,15 @@ class TopicItem extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {
-      data: this.props.data
     }
   }
 
   showTopicDetails(data) {
-    this.props.navigation.navigate('TopicDetails', {title: data.title})
+    this.props.navigation.navigate('TopicDetails', { title: data.title, reloadData: this.props.loadData })
   }
 
   render() {
-    let { data } = this.state;
+    let { data } = this.props;
     return (
       <View style={styles.topicItem}>
         <Card>
@@ -152,6 +151,7 @@ class TopicItem extends React.PureComponent {
             </CardItem>
           </TouchableOpacity>
           <FlatList
+            extraData={this.state}
             horizontal={true}
             data={data.words}
             renderItem={({ item }) =>
