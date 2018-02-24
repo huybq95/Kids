@@ -66,12 +66,14 @@ class Setting extends React.PureComponent {
 
   changeTextType(value) {
     this.setState({ settings: { ...this.state.settings, isUpperCase: value } }, () => {
+      this.props.actions.saveSetting(this.state.settings);
       this.saveSettings(this.state.settings);
     });
   }
 
   changeAlert(value) {
     this.setState({ settings: { ...this.state.settings, isAlert: value } }, () => {
+      this.props.actions.saveSetting(this.state.settings);
       this.saveSettings(this.state.settings);
     });
   }
@@ -86,6 +88,7 @@ class Setting extends React.PureComponent {
   changeWordCount(index) {
     let value = NUMBERS_LIST[index] + '';
     this.setState({ settings: { ...this.state.settings, wordCount: value } }, () => {
+      this.props.actions.saveSetting(this.state.settings);
       this.saveSettings(this.state.settings);
     });
   }
@@ -93,6 +96,7 @@ class Setting extends React.PureComponent {
   changeNewCount(index) {
     let value = NEW_LIST[index] + '';
     this.setState({ settings: { ...this.state.settings, newCount: value } }, () => {
+      this.props.actions.saveSetting(this.state.settings);
       this.saveSettings(this.state.settings);
     });
   }

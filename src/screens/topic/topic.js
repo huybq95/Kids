@@ -14,10 +14,14 @@ import {
 import { Card, CardItem, Body } from 'native-base';
 import Modal from 'react-native-modal';
 import Toast, { DURATION } from 'react-native-easy-toast';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import * as topicActions from './topic.actions';
 
 import { TabNavigator } from 'react-navigation';
 import * as db from '../../db/db';
 import Fab from '../../components/fab';
+import TopicItem from './topic.item';
 
 const TOPIC_TYPE = 'topic';
 
@@ -38,6 +42,8 @@ export default class Topic extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {
+      // textColor: this.props.settings.textColor || 'black',
+      // isUpperCase: this.props.settings.isUpperCase || false,
       listTopic: [],
       visibleModal: false,
       newTopic: {
@@ -51,6 +57,22 @@ export default class Topic extends React.PureComponent {
   componentWillMount() {
     this.loadData();
   }
+
+  // componentDidMount() {
+  //   this.setState({
+  //     textColor: this.props.settings.textColor,
+  //     isUpperCase: this.props.settings.isUpperCase
+  //   });
+  // }
+
+  // componentWillReceiveProps(nextProps) {
+  //   if (nextProps && nextProps.settings) {
+  //     this.setState({
+  //       textColor: nextProps.settings.textColor,
+  //       isUpperCase: nextProps.settings.isUpperCase,
+  //     });
+  //   }
+  // }
 
   loadData() {
     db.getListTopic(this.getListTopicCallback.bind(this));
@@ -104,7 +126,7 @@ export default class Topic extends React.PureComponent {
               <View style={styles.modal}>
                 <Card>
                   <CardItem style={{ backgroundColor: 'tomato' }} header>
-                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'white' }}>Thêm chủ đề</Text>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold' }}>Thêm chủ đề</Text>
                   </CardItem>
                   <View style={{ flex: 2.5, padding: 16 }}>
                     <Text style={{ marginRight: 10, fontSize: 20, marginBottom: 20 }}>Tên chủ đề: </Text>
@@ -144,44 +166,6 @@ export default class Topic extends React.PureComponent {
         />
       </View>
     );
-  }
-}
-
-class TopicItem extends React.PureComponent {
-  constructor(props) {
-    super(props)
-    this.state = {
-    }
-  }
-
-  showTopicDetails(data) {
-    this.props.navigation.navigate('TopicDetails', { title: data.title, reloadData: this.props.loadData })
-  }
-
-  render() {
-    let { data } = this.props;
-    return (
-      <View style={styles.topicItem}>
-        <Card>
-          <TouchableOpacity onPress={() => this.showTopicDetails(data)}>
-            <CardItem header>
-              <Text style={{ fontSize: 24 }}>{data.title}</Text>
-            </CardItem>
-          </TouchableOpacity>
-          <FlatList
-            extraData={this.state}
-            horizontal={true}
-            data={data.words}
-            renderItem={({ item }) =>
-              <View style={styles.wordItem}>
-                <Card style={{ justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={{ fontSize: 24 }}>{item.text}</Text>
-                </Card>
-              </View>}
-          ></FlatList>
-        </Card>
-      </View>
-    )
   }
 }
 

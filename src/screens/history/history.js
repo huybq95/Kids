@@ -9,13 +9,24 @@ export class History extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      textColor: this.props.settings.textColor || 'black'
+      textColor: this.props.settings.textColor || 'black',
+      isUpperCase: this.props.settings.isUpperCase || 'black'
     }
+  }
+
+  componentDidMount() {
+    this.setState({
+      textColor: this.props.settings.textColor,
+      isUpperCase: this.props.settings.isUpperCase
+    });
   }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps && nextProps.settings) {
-      this.setState({ textColor: nextProps.settings.settings.textColor });
+      this.setState({
+        textColor: nextProps.settings.textColor,
+        isUpperCase: nextProps.settings.isUpperCase
+      });
     }
   }
 
@@ -23,7 +34,7 @@ export class History extends React.PureComponent {
     console.log(this.state.textColor)
     return (
       <View style={styles.container}>
-        <Text style={{ color: this.state.textColor }}>History!</Text>
+        <Text style={{ color: this.state.textColor }}>{this.state.isUpperCase ? 'History!'.toUpperCase() : 'History!'}</Text>
       </View>
     );
   }

@@ -4,11 +4,11 @@ var db = new Datastore({ filename: 'myDB', autoload: true });
 db.ensureIndex({ fieldName: 'title', unique: true, sparse: true });
 db.ensureIndex({ fieldName: 'isFirstLaunchApp', unique: true, sparse: true });
 db.ensureIndex({ fieldName: 'text', unique: true, sparse: true });
-console.log(db)
-const settings = {
+
+const setting = {
     isFirstLaunchApp: true,
-    type: 'settings',
-    isUpper: true,
+    type: 'setting',
+    isUpper: false,
     textColor: 'black',
     numsWord: 5,
     numsNewWord: 1,
@@ -113,8 +113,8 @@ export function createNewWord(topic, word, cb, cb1) {
     })
 }
 
-function addWordToTopic (topic, word) {
-    db.update({type: 'topic', title: topic}, { $push: { words: word} }, (err, res) => {
+function addWordToTopic(topic, word) {
+    db.update({ type: 'topic', title: topic }, { $push: { words: word } }, (err, res) => {
         if (err) {
             console.log('Cant add word to topic: ', err)
         }
