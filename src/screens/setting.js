@@ -78,7 +78,7 @@ export default class Setting extends React.PureComponent {
                 options={NUMBERS_LIST}>
                 <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                   <Text style={styles.textStyleModalDropdown}>{this.state.general.wordCount}</Text>
-                  <Ionicons name='md-arrow-dropdown' size={24} color='black' style={{ top: 3, marginLeft: 8 }} />
+                  <Ionicons name='md-arrow-dropdown' size={24} color='black' style={{ top: 2, marginLeft: 8 }} />
                 </View>
               </ModalDropdown>
             </View>
@@ -99,7 +99,7 @@ export default class Setting extends React.PureComponent {
                 options={NEW_LIST}>
                 <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                   <Text style={styles.textStyleModalDropdown}>{this.state.general.newCount}</Text>
-                  <Ionicons name='md-arrow-dropdown' size={24} color='black' style={{ top: 3, marginLeft: 8 }} />
+                  <Ionicons name='md-arrow-dropdown' size={24} color='black' style={{ top: 2, marginLeft: 8 }} />
                 </View>
               </ModalDropdown>
             </View>
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   textStyleModalDropdown: {
     color: 'black',
     opacity: 0.87,
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '400',
   },
   rightContainer: {
