@@ -3,9 +3,9 @@ import { TabNavigator, StackNavigator, TabBarBottom } from 'react-navigation';
 import { Ionicons } from '@expo/vector-icons';
 
 import Lesson from './screens/lesson';
-import History from './screens/history';
+import History from './screens/history/history';
 import Topic from './screens/topic';
-import Setting from './screens/setting';
+import Setting from './screens/settings/setting';
 
 const tabRoot = TabNavigator(
     {
