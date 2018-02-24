@@ -4,7 +4,7 @@ var db = new Datastore({ fileName: 'asyncStorageKey', autoLoad: true });
 
 const setting = {
     type: 'setting',
-    isUpper: true,
+    isUpper: false,
     textColor: 'black',
     numsWord: 5,
     numsNewWord: 1,
