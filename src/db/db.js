@@ -1,9 +1,13 @@
 import Datastore from 'react-native-local-mongodb';
 
-var db = new Datastore({ fileName: 'asyncStorageKey', autoLoad: true });
-
-const setting = {
-    type: 'setting',
+var db = new Datastore({ filename: 'myDB', autoload: true });
+db.ensureIndex({ fieldName: 'title', unique: true, sparse: true });
+db.ensureIndex({ fieldName: 'isFirstLaunchApp', unique: true, sparse: true });
+db.ensureIndex({ fieldName: 'text', unique: true, sparse: true });
+console.log(db)
+const settings = {
+    isFirstLaunchApp: true,
+    type: 'settings',
     isUpper: true,
     textColor: 'black',
     numsWord: 5,
@@ -11,32 +15,29 @@ const setting = {
     notification: true
 }
 
-const topics = [
-    {
-        type: 'topic',
-        title: 'Topic 1',
-        words: [
-            { text: 'Word 1', isCompleted: false, isLearning: false },
-            { text: 'Word 2', isCompleted: false, isLearning: false },
-            { text: 'Word 3', isCompleted: false, isLearning: false }
-        ]
-    }
-]
+const topic = {
+    type: 'topic',
+    title: 'Topic 1',
+    words: [
+        { type: 'word', text: 'Word 1', isCompleted: false, isLearning: false },
+        { type: 'word', text: 'Word 2', isCompleted: false, isLearning: false },
+        { type: 'word', text: 'Word 3', isCompleted: false, isLearning: false }
+    ]
+}
 
 export function initData() {
-    db.insert(setting, (err, res) => {
+    db.insert(settings, (err, res) => {
         if (err) {
-            console.log(`Can't not create setting: `, err)
+            // console.log(`Can't not create setting: `, err)
         } else {
-            console.log('Created settings !')
+            // console.log('Created settings !')
         }
     });
-
-    db.insert(topics, (err, res) => {
+    db.insert(topic, (err, res) => {
         if (err) {
-            console.log(`Can't not create topics: `, err)
+            // console.log(`Can't not create topics: `, err)
         } else {
-            console.log('Created topics !')
+            // console.log('Created topics !')
         }
     })
 }
@@ -47,7 +48,6 @@ export function getSetting(cb) {
             console.log('Cant get setting')
         } else {
             cb && cb(res || {});
-            console.log(res)
         }
     })
 }
@@ -59,19 +59,21 @@ export function saveSetting(newSetting) {
             console.log('Cant save setting: ', err)
         } else {
             console.log('Save setting success', res);
-            getSetting();
         }
     })
 }
 
-export function createTopic(topic) {
+export function createTopic(topic, cb) {
     db.insert(topic, (err, res) => {
         if (err) {
             console.log(`Can't not create topic: `, err)
+            cb && cb();
         } else {
             console.log('Topic created !')
         }
     })
+
+    console.log(db.getAllData())
 }
 
 export function getListTopic(cb) {
@@ -82,6 +84,7 @@ export function getListTopic(cb) {
         } else {
             topics = res;
             cb && cb(topics);
+            // console.log(res)
         }
     })
 }
@@ -98,16 +101,40 @@ export function getListWordOfTopic(title, cb) {
     })
 }
 
-export function createNewWord(topic, word) {
-    let wordObj = {};
-    wordObj.text = word;
-    wordObj.isCompleted = false;
-    wordObj.isLearning = false;
-    db.update({type: 'topic', title: topic}, { $push: { words: wordObj} }, (err, res) => {
+export function createNewWord(topic, word, cb, cb1) {
+    db.insert(word, (err, res) => {
         if (err) {
-            console.log('Cant add new word: ', err)
+            console.log('Cant create new word: ', err)
+            cb1 && cb1()
         } else {
-            console.log('Create new word success')
+            addWordToTopic(topic, word)
+            cb && cb()
+        }
+    })
+}
+
+function addWordToTopic (topic, word) {
+    db.update({type: 'topic', title: topic}, { $push: { words: word} }, (err, res) => {
+        if (err) {
+            console.log('Cant add word to topic: ', err)
+        }
+        console.log(db.getAllData())
+    })
+}
+
+export function getWords() {
+    let _words = []
+    db.find({ 'words.type': 'word' }, (err, res) => {
+        if (err) {
+            console.log('Cant get words')
+        } else {
+            res.forEach(topic => {
+                topic.words.forEach(word => {
+                    _words.push(word)
+                })
+            })
+
+            console.log(_words);
         }
     })
 }

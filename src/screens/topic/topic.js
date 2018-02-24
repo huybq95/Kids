@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Card, CardItem, Body } from 'native-base';
 import Modal from 'react-native-modal';
+import Toast, { DURATION } from 'react-native-easy-toast';
 
 import { TabNavigator } from 'react-navigation';
 import * as db from '../../db/db';
@@ -23,11 +24,13 @@ const TOPIC_TYPE = 'topic';
 export default class Topic extends React.PureComponent {
   static navigationOptions = {
     // title: 'Topic',
+    headerTitle: 'Chủ đề',
     headerStyle: {
       backgroundColor: 'tomato',
     },
     headerTintColor: '#fff',
     headerTitleStyle: {
+      fontSize: 24,
       fontWeight: 'bold',
     },
   }
@@ -68,7 +71,7 @@ export default class Topic extends React.PureComponent {
     topic.type = type;
     topic.title = title;
     topic.words = [];
-    db.createTopic(topic);
+    db.createTopic(topic, this.showToast.bind(this));
     this.closeModal();
     this.loadData();
   }
@@ -79,6 +82,10 @@ export default class Topic extends React.PureComponent {
 
   closeModal() {
     this.setState({ visibleModal: false })
+  }
+
+  showToast() {
+    this.refs.toast.show('Cant add topic !')
   }
 
   render() {
@@ -104,6 +111,7 @@ export default class Topic extends React.PureComponent {
                     <TextInput
                       style={{ width: 300, fontSize: 20 }}
                       placeholder='Nhập tên chủ đề'
+                      underlineColorAndroid='transparent'
                       onChangeText={(text) => this.setState({ newTopic: { ...this.state.newTopic, title: text } })}
                     ></TextInput>
                     <View style={{ borderBottomColor: 'black', opacity: 0.2, borderBottomWidth: 1, padding: 5 }}></View>
@@ -124,6 +132,16 @@ export default class Topic extends React.PureComponent {
           </KeyboardAvoidingView>
         </Modal>
         <Fab openModal={this.openModal.bind(this)} />
+        <Toast
+          ref="toast"
+          style={{ backgroundColor: 'tomato' }}
+          position='bottom'
+          positionValue={200}
+          fadeInDuration={500}
+          fadeOutDuration={500}
+          opacity={0.8}
+          textStyle={{ color: 'white' }}
+        />
       </View>
     );
   }

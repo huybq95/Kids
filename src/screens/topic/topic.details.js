@@ -16,6 +16,8 @@ import { Card, CardItem } from 'native-base';
 import Fab from '../../components/fab';
 import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
+import { Speech } from 'expo';
+import Toast, { DURATION } from 'react-native-easy-toast';
 
 import * as db from '../../db/db';
 
@@ -39,7 +41,7 @@ export default class TopicDetails extends React.PureComponent {
                     navigation.goBack();
                     params.reloadData();
                 }}>
-                    <Ionicons name='ios-arrow-back' size={24} color='white' style={{padding: 16}}></Ionicons>
+                    <Ionicons name='ios-arrow-back' size={24} color='white' style={{ padding: 16 }}></Ionicons>
                 </TouchableOpacity>
             )
         }
@@ -59,6 +61,11 @@ export default class TopicDetails extends React.PureComponent {
         this.loadData()
     }
 
+    speech() {
+        Speech.stop();
+        Speech.speak(this.state.newWord, { language: 'en-US' });
+    }
+
     loadData() {
         db.getListWordOfTopic(this.state.topicTitle, this.getWordsCallback.bind(this));
     }
@@ -75,26 +82,46 @@ export default class TopicDetails extends React.PureComponent {
         this.setState({ visibleModal: false })
     }
 
+    showToast() {
+        this.refs.toast.show('Cant add word !')
+    }
+
     createNewWord() {
-        db.createNewWord(this.state.topicTitle, this.state.newWord);
+        let word = {};
+        word.text = this.state.newWord;
+        word.isCompleted = false;
+        word.isLearning = false;
+        db.createNewWord(this.state.topicTitle, word, this.loadData.bind(this), this.showToast.bind(this));
         this.closeModal();
-        this.loadData();
     }
 
     render() {
         let { words, visibleModal } = this.state;
+        // console.log(words)
         return (
             <View style={styles.container}>
                 <FlatList
+                    extraData={this.state}
                     numColumns={3}
                     data={words}
-                    renderItem={({ item }) => <View style={styles.wordItem}>
+                    renderItem={({ item }) => <TouchableOpacity onPress={() => { }}
+                        style={styles.wordItem}>
                         <Card style={{ justifyContent: 'center', alignItems: 'center' }}>
                             <Text style={{ fontSize: 24 }}>{item.text}</Text>
                         </Card>
-                    </View>}
+                    </TouchableOpacity>}
                 ></FlatList>
                 <Fab openModal={this.openModal.bind(this)} />
+                <Toast
+                    ref='toast'
+                    style={{ backgroundColor: 'tomato' }}
+                    position='bottom'
+                    positionValue={200}
+                    fadeInDuration={500}
+                    fadeOutDuration={500}
+                    opacity={0.8}
+                    textStyle={{ color: 'white' }}
+                />
                 <Modal style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
                     onBackButtonPress={() => this.closeModal()}
                     onBackdropPress={() => this.closeModal()}
@@ -111,9 +138,15 @@ export default class TopicDetails extends React.PureComponent {
                                         <TextInput
                                             style={{ width: 300, fontSize: 20 }}
                                             placeholder='Nhập từ mới'
+                                            underlineColorAndroid='transparent'
                                             onChangeText={(text) => this.setState({ newWord: text })}
                                         ></TextInput>
                                         <View style={{ borderBottomColor: 'black', opacity: 0.2, borderBottomWidth: 1, padding: 5 }}></View>
+                                        <TouchableOpacity onPress={() => this.speech()}
+                                            style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                            <Ionicons style={{ paddingHorizontal: 10 }} name='ios-play' color='tomato' size={48}></Ionicons>
+                                            <Text style={{ fontSize: 20 }}>Nghe thử</Text>
+                                        </TouchableOpacity>
                                     </View>
                                     <View style={{ flexDirection: 'row', flex: 1 }}>
                                         <TouchableOpacity onPress={() => this.createNewWord()}

@@ -12,7 +12,7 @@ const NEW_LIST = [1, 2, 3, 5];
 
 import * as db from './../../db/db';
 
-export class Setting extends React.PureComponent {
+class Setting extends React.PureComponent {
   static navigationOptions = {
     headerTitle: 'Cài đặt',
     headerStyle: {
@@ -107,7 +107,7 @@ export class Setting extends React.PureComponent {
           <View style={styles.rowContainer}>
             <Text style={styles.textLeft}>Chữ hoa</Text>
             <View style={styles.rightContainer}>
-              <Switch onValueChange={(value) => this.changeTextType(value)} value={this.state.settings.isUpperCase} />
+              <Switch onTintColor='tomato' onValueChange={(value) => this.changeTextType(value)} value={this.state.settings.isUpperCase} />
             </View>
           </View>
           <View style={styles.seperate}></View>
@@ -169,7 +169,7 @@ export class Setting extends React.PureComponent {
         <View style={{ paddingVertical: 8, paddingHorizontal: 16, width: '100%', flexDirection: 'row', alignItems: 'center' }}>
           <Text style={[styles.title, { width: '60%' }]}>Nhắc nhở</Text>
           <View style={styles.rightContainer}>
-            <Switch onValueChange={(value) => this.changeAlert(value)} value={this.state.settings.isAlert} />
+            <Switch onTintColor='tomato' onValueChange={(value) => this.changeAlert(value)} value={this.state.settings.isAlert} />
           </View>
         </View>
         <View style={styles.settingsContainer}>

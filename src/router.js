@@ -2,9 +2,9 @@ import React from 'react';
 import { TabNavigator, StackNavigator, TabBarBottom } from 'react-navigation';
 import { Ionicons } from '@expo/vector-icons';
 
-import Lesson from './screens/lesson';
+import Lesson from './screens/lesson/lesson';
 import History from './screens/history/history';
-import Topic from './screens/topic';
+import Topic from './screens/topic/topic';
 import TopicDetails from './screens/topic/topic.details';
 import Setting from './screens/settings/setting';
 
@@ -45,7 +45,7 @@ const tabRoot = TabNavigator(
         },
         tabBarComponent: TabBarBottom,
         tabBarPosition: 'bottom',
-        animationEnabled: true,
+        animationEnabled: false,
         swipeEnabled: false,
     }
 );

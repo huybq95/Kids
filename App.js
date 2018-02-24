@@ -9,11 +9,12 @@ import configureStore from './src/store/configureStore';
 const store = configureStore();
 
 console.disableYellowBox = true;
+db.initData();
+db.initData();
 
 export default class App extends React.Component {
   constructor(props) {
     super(props);
-    db.initData();
   }
 
   render() {

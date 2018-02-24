@@ -1,5 +1,14 @@
 {
   "expo": {
-    "sdkVersion": "25.0.0"
+    "sdkVersion": "25.0.0",
+    "name": "GlennDoman",
+    "version": "1.0.0",
+    "slug": "glenn-doman-app",
+    "ios": {
+      "bundleIdentifier": "com.huybq.glenndoman"
+    },
+    "android": {
+      "package": "com.huybq.glenndoman"
+    }
   }
 }

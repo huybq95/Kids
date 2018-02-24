@@ -15,11 +15,12 @@ export class History extends React.PureComponent {
 
   componentWillReceiveProps(nextProps) {
     if (nextProps && nextProps.settings) {
-      this.setState({ textColor: nextProps.settings.textColor });
+      this.setState({ textColor: nextProps.settings.settings.textColor });
     }
   }
 
   render() {
+    console.log(this.state.textColor)
     return (
       <View style={styles.container}>
         <Text style={{ color: this.state.textColor }}>History!</Text>
