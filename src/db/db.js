@@ -1,19 +1,24 @@
-import { SecureStore } from 'expo';
+import Datastore from 'react-native-local-mongodb';
 
-export function setTopic(topicObj) {
-    SecureStore.setItemAsync(topicObj.title, JSON.stringify(topicObj))
-        .then(() => console.log('Topic created !'))
-        .catch(err => {
-            console.log(`Can't create topic: `, err)
-        })
+console.log(Datastore);
+var db = new Datastore({fileName: 'asyncStorageKey', autoLoad: true});
+
+export function createSetting(objSetting) {
+    db.insert(objSetting, (err, res) => {
+        if (err) {
+            console.log(`Can't not save setting: `, err)
+        } else {
+            console.log('Saved settings !')
+        }
+    })
 }
 
-export function addWordToTopic(topicTitle, wordObj) {
-    SecureStore.getItemAsync(topicTitle)
-    .then(topic => {
-        topic.words.push(wordObj);
-        setTopic(topic);
-    }).catch(err => {
-        console.log(`Can't get topic: `, err)
+export function getSetting() {
+    db.find({id: 'setting'}, (err, res) => {
+        if (err) {
+            console.log('Cant get setting')
+        } else {
+            console.log(res)
+        }
     })
 }

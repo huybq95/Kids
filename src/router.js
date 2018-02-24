@@ -10,9 +10,9 @@ import Setting from './screens/setting';
 export default TabNavigator(
     {
         Lesson: { screen: Lesson },
-        History: { screen: History },
-        Topic: { screen: Topic },
-        Setting: { screen: Setting },
+        History: { screen: History, title: 'Lịch sử' },
+        Topic: { screen: Topic, title: 'Chủ đề' },
+        Setting: { screen: Setting, title: 'Cài đặt' },
     },
     {
         navigationOptions: ({ navigation }) => ({
@@ -48,3 +48,10 @@ export default TabNavigator(
         swipeEnabled: true,
     }
 );
+
+// export default StackNavigator({
+//     screen: {
+//         screen: tabRoot,
+//         // navigationOptions: { title: 'GlennDoman' }
+//     }
+// })
