@@ -42,11 +42,11 @@ export function initData() {
 }
 
 export function getSetting(cb) {
-    db.find({ type: 'setting' }, (err, res) => {
+    db.findOne({ type: 'setting' }, (err, res) => {
         if (err) {
             console.log('Cant get setting')
         } else {
-            cb && cb(res[0] || {});
+            cb && cb(res || {});
             console.log(res)
         }
     })
@@ -83,6 +83,18 @@ export function getListTopic(cb) {
             console.log('TOPIC: ', res)
             topics = res;
             cb && cb(topics);
+        }
+    })
+}
+
+export function getListWordOfTopic(title, cb) {
+    var words = [];
+    db.findOne({ type: 'topic', title: title }, (err, res) => {
+        if (err) {
+            console.log(`Cant get words by ${title}: `, err)
+        } else {
+            words = res.words;
+            cb && cb(words)
         }
     })
 }

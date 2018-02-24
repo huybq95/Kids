@@ -4,12 +4,13 @@ import { Ionicons } from '@expo/vector-icons';
 
 import Lesson from './screens/lesson';
 import History from './screens/history';
-import Topic from './screens/topic';
+import Topic from './screens/topic/topic';
+import TopicDetails from './screens/topic/topic.details';
 import Setting from './screens/setting';
 
 const tabRoot = TabNavigator(
     {
-        Lesson: { screen: Lesson },
+        Lesson: { screen: Lesson, title: 'Bài học' },
         History: { screen: History, title: 'Lịch sử' },
         Topic: { screen: Topic, title: 'Chủ đề' },
         Setting: { screen: Setting, title: 'Cài đặt' },
@@ -50,8 +51,6 @@ const tabRoot = TabNavigator(
 );
 
 export default StackNavigator({
-    screen: {
-        screen: tabRoot,
-        navigationOptions: { title: 'GlennDoman' }
-    }
+    Home: tabRoot,
+    TopicDetails: {screen: TopicDetails}
 })
