@@ -52,7 +52,7 @@ export default class Topic extends React.PureComponent {
   }
 
   componentWillMount() {
-    this.loadData()
+    this.loadData();
   }
 
   // componentDidMount() {
@@ -107,8 +107,8 @@ export default class Topic extends React.PureComponent {
     let { listTopic, visibleModal } = this.state;
     return (
       <View style={styles.container}>
-        <FlatList data={listTopic}
-          renderItem={({ item }) => <TopicItem navigation={this.props.navigation} key={item._id} data={item} />}
+        <FlatList data={listTopic} extraData={this.state}
+          renderItem={({ item }) => <TopicItem loadData={this.loadData.bind(this)} navigation={this.props.navigation} key={item._id} data={item} />}
         ></FlatList>
         <Modal style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
           onBackButtonPress={() => this.closeModal()}
@@ -150,6 +150,7 @@ export default class Topic extends React.PureComponent {
     );
   }
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1

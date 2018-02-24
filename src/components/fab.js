@@ -5,6 +5,7 @@ export default class Fab extends React.PureComponent {
     constructor(props) {
         super(props)
     }
+    
     render() {
         return (
             <FloatingAction
