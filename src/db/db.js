@@ -4,8 +4,8 @@ var db = new Datastore({ fileName: 'asyncStorageKey', autoLoad: true });
 
 const setting = {
     type: 'setting',
-    isUpper: false,
-    textColor: 'red',
+    isUpper: true,
+    textColor: 'tomato',
     numsWord: 5,
     numsNewWord: 1,
     notification: true
@@ -41,30 +41,25 @@ export function initData() {
     })
 }
 
-export function getSetting() {
-    db.find({ id: 'setting' }, (err, res) => {
+export function getSetting(cb) {
+    db.find({ type: 'setting' }, (err, res) => {
         if (err) {
             console.log('Cant get setting')
         } else {
+            cb && cb(res[0] || {});
             console.log(res)
         }
     })
 }
 
 
-export function saveSetting() {
-    let newSetting = {
-        isUpper: true,
-        textColor: 'black',
-        numsWord: 5,
-        numsNewWord: 1,
-        notification: true
-    }
+export function saveSetting(newSetting) {
     db.update({ type: 'setting' }, { $set: newSetting }, (err, res) => {
         if (err) {
             console.log('Cant save setting: ', err)
         } else {
-            console.log('Save setting success')
+            console.log('Save setting success', res);
+            getSetting();
         }
     })
 }
