@@ -7,6 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 const NUMBERS_LIST = [5, 10, 15];
 const NEW_LIST = [1, 2, 3, 5];
 
+import * as db from '../db/db';
+
 export default class Setting extends React.PureComponent {
   constructor(props) {
     super(props);
