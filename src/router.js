@@ -3,10 +3,10 @@ import { TabNavigator, StackNavigator, TabBarBottom } from 'react-navigation';
 import { Ionicons } from '@expo/vector-icons';
 
 import Lesson from './screens/lesson';
-import History from './screens/history';
-import Topic from './screens/topic/topic';
+import History from './screens/history/history';
+import Topic from './screens/topic';
 import TopicDetails from './screens/topic/topic.details';
-import Setting from './screens/setting';
+import Setting from './screens/settings/setting';
 
 const tabRoot = TabNavigator(
     {
@@ -52,5 +52,5 @@ const tabRoot = TabNavigator(
 
 export default StackNavigator({
     Home: tabRoot,
-    TopicDetails: {screen: TopicDetails}
+    TopicDetails: { screen: TopicDetails }
 })

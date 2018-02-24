@@ -3,13 +3,16 @@ import { Text, View, StyleSheet, Switch, TouchableOpacity, Picker, PickerIOS } f
 import { TabNavigator } from 'react-navigation';
 import ModalDropdown from 'react-native-modal-dropdown';
 import { Ionicons } from '@expo/vector-icons';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import * as settingActions from './setting.actions';
 
 const NUMBERS_LIST = [5, 10, 15];
 const NEW_LIST = [1, 2, 3, 5];
 
-import * as db from '../db/db';
+import * as db from './../../db/db';
 
-export default class Setting extends React.PureComponent {
+export class Setting extends React.PureComponent {
   static navigationOptions = {
     headerTitle: 'Cài đặt',
     headerStyle: {
@@ -44,14 +47,21 @@ export default class Setting extends React.PureComponent {
     let objSetting = {};
     objSetting.isUpperCase = data.isUpper || curSetting.isUpperCase;
     objSetting.textColor = data.textColor || curSetting.textColor;
-    objSetting.numsWord = data.numsWord || curSetting.numsWord;
-    objSetting.numsNewWord = data.numsNewWord || curSetting.numsNewWord;
+    objSetting.wordCount = data.numsWord || curSetting.numsWord;
+    objSetting.newCount = data.numsNewWord || curSetting.numsNewWord;
     objSetting.isAlert = data.notification || curSetting.isAlert;
     this.setState({ settings: objSetting });
   }
 
   saveSettings(data) {
-    db.saveSetting(data);
+    const curSetting = this.state.settings;
+    let objSetting = {};
+    objSetting.isUpper = data.isUpperCase || curSetting.isUpperCase;
+    objSetting.textColor = data.textColor || curSetting.textColor;
+    objSetting.numsWord = data.wordCount || curSetting.wordCount;
+    objSetting.numsNewWord = data.newCount || curSetting.newCount;
+    objSetting.notification = data.isAlert || curSetting.isAlert;
+    db.saveSetting(objSetting);
   }
 
   changeTextType(value) {
@@ -68,6 +78,7 @@ export default class Setting extends React.PureComponent {
 
   changeTextColor(color) {
     this.setState({ settings: { ...this.state.settings, textColor: color } }, () => {
+      this.props.actions.saveSetting(this.state.settings);
       this.saveSettings(this.state.settings);
     });
   }
@@ -185,6 +196,20 @@ export default class Setting extends React.PureComponent {
     );
   }
 }
+
+function mapStateToProps(state, ownProps) {
+  return {
+    settings: state.settings
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    actions: bindActionCreators(settingActions, dispatch)
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Setting);
 
 const styles = StyleSheet.create({
   container: {

@@ -25,8 +25,12 @@
     "react-native": "0.52.0",
     "react-native-floating-action": "^1.9.0",
     "react-native-local-mongodb": "^1.9.1",
-    "react-native-modal-dropdown": "^0.6.1",
     "react-native-modal": "^5.0.1",
-    "react-navigation": "^1.1.2"
+    "react-native-modal-dropdown": "^0.6.1",
+    "react-navigation": "^1.1.2",
+    "react-redux": "^5.0.7",
+    "redux": "^3.7.2",
+    "redux-persist": "^5.9.1",
+    "redux-thunk": "^2.2.0"
   }
 }
