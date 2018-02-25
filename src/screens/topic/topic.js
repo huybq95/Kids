@@ -27,7 +27,6 @@ const TOPIC_TYPE = 'topic';
 
 export default class Topic extends React.PureComponent {
   static navigationOptions = {
-    // title: 'Topic',
     headerTitle: 'Chủ đề',
     headerStyle: {
       backgroundColor: 'tomato',
@@ -54,10 +53,6 @@ export default class Topic extends React.PureComponent {
     }
   }
 
-  componentWillMount() {
-    this.loadData();
-  }
-
   // componentDidMount() {
   //   this.setState({
   //     textColor: this.props.settings.textColor,
@@ -74,28 +69,16 @@ export default class Topic extends React.PureComponent {
   //   }
   // }
 
-  loadData() {
-    db.getListTopic(this.getListTopicCallback.bind(this));
-  }
-
-  getListTopicCallback(listTopic) {
-    let _listTopic = listTopic.sort((a, b) => {
-      if (a.title > b.title) return 1;
-      if (a.title < b.title) return -1;
-      return 0;
-    })
-    this.setState({ listTopic: _listTopic })
-  }
-
-  createTopic() {
-    let topic = {};
-    let { title, type, words } = this.state.newTopic;
-    topic.type = type;
-    topic.title = title;
-    topic.words = [];
-    db.createTopic(topic, this.showToast.bind(this));
-    this.closeModal();
+  componentWillMount() {
     this.loadData();
+  }
+
+  loadData() {
+    db.getAllTopic().then(data => {
+      this.setState({ listTopic: data })
+    }).catch(err => {
+      this.setState({ listTopic: [] })
+    })
   }
 
   openModal() {
@@ -114,9 +97,12 @@ export default class Topic extends React.PureComponent {
     let { listTopic, visibleModal } = this.state;
     return (
       <View style={styles.container}>
-        <FlatList data={listTopic} extraData={this.state}
-          renderItem={({ item }) => <TopicItem loadData={this.loadData.bind(this)} navigation={this.props.navigation} key={item._id} data={item} />}
-        ></FlatList>
+        {
+          listTopic.length > 0 ?
+            <FlatList data={listTopic} extraData={this.state}
+              renderItem={({ item }) => <TopicItem loadData={this.loadData.bind(this)} navigation={this.props.navigation} key={item._id} data={item} />}
+            ></FlatList> : null
+        }
         <Modal style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
           onBackButtonPress={() => this.closeModal()}
           onBackdropPress={() => this.closeModal()}

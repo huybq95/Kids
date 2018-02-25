@@ -53,7 +53,7 @@ export default class TopicDetails extends React.PureComponent {
             words: [],
             visibleModal: false,
             topicTitle: this.props.navigation.state.params.title || '',
-            newWord: null
+            newWord: null,
         }
     }
 
@@ -67,11 +67,12 @@ export default class TopicDetails extends React.PureComponent {
     }
 
     loadData() {
-        db.getListWordOfTopic(this.state.topicTitle, this.getWordsCallback.bind(this));
-    }
-
-    getWordsCallback(data) {
-        this.setState({ words: data })
+        // db.getListWordOfTopic(this.state.topicTitle).then(data => {
+        //     console.log('data set to topic details: ', data)
+        //     this.setState({ words: data })
+        // }).catch(err => {
+        //     console.log(err)
+        // })
     }
 
     openModal() {
@@ -91,8 +92,15 @@ export default class TopicDetails extends React.PureComponent {
         word.text = this.state.newWord;
         word.isCompleted = false;
         word.isLearning = false;
-        db.createNewWord(this.state.topicTitle, word, this.loadData.bind(this), this.showToast.bind(this));
-        this.closeModal();
+        // db.createNewWord(this.state.topicTitle, word)
+        // .then(() => {
+        //     this.loadData();
+        //     this.closeModal();
+        // })
+        // .catch(() => {
+        //     this.closeModal();
+        //     this.showToast();
+        // })
     }
 
     render() {
@@ -104,7 +112,13 @@ export default class TopicDetails extends React.PureComponent {
                     extraData={this.state}
                     numColumns={3}
                     data={words}
-                    renderItem={({ item }) => <TouchableOpacity onPress={() => { }}
+                    renderItem={({ item }) => <TouchableOpacity onPress={() => {
+                        // db.removeWord(item._id).then(() => {
+                        //     this.loadData()
+                        // }).catch(err => {
+
+                        // })
+                    }}
                         style={styles.wordItem}>
                         <Card style={{ justifyContent: 'center', alignItems: 'center' }}>
                             <Text style={{ fontSize: 24 }}>{item.text}</Text>

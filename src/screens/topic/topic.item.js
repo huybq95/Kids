@@ -9,7 +9,8 @@ import {
     KeyboardAvoidingView,
     TouchableWithoutFeedback,
     Keyboard,
-    TextInput
+    TextInput,
+    Alert
 } from 'react-native';
 import { Card, CardItem, Body } from 'native-base';
 import Modal from 'react-native-modal';
@@ -20,6 +21,8 @@ import * as topicActions from './topic.actions';
 import { TabNavigator } from 'react-navigation';
 import * as db from '../../db/db';
 import Fab from '../../components/fab';
+import Ionicons from '@expo/vector-icons/Ionicons';
+// import Toast, { DURATION } from 'react-native-easy-toast';
 
 const TOPIC_TYPE = 'topic';
 
@@ -43,12 +46,36 @@ export class TopicItem extends React.PureComponent {
     componentWillReceiveProps(nextProps) {
         this.setState({
             textColor: nextProps.settings.textColor,
-            isUpperCase: nextProps.settings.isUpperCase
+            isUpperCase: nextProps.settings.isUpperCase,
+            data: nextProps.data
         });
     }
 
     showTopicDetails(data) {
-        this.props.navigation.navigate('TopicDetails', { title: data.title })
+        this.props.navigation.navigate('TopicDetails', { title: data.title, reloadData: this.props.loadData })
+    }
+
+    // showToast() {
+    //     this.refs.toast.show('Topic deleted !')
+    // }
+
+    removeTopic(title) {
+        Alert.alert(
+            'Bạn có muốn xóa chủ đề này ?',
+            '',
+            [
+                {
+                    text: 'OK', onPress: () => {
+                        db.removeTopic(title).then(() => {
+                            // this.showToast();
+                            this.props.loadData();
+                        }).catch(err => { })
+                    }
+                },
+                { text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
+            ],
+            { cancelable: false }
+        )
     }
 
     render() {
@@ -56,11 +83,18 @@ export class TopicItem extends React.PureComponent {
         return (
             <View style={styles.topicItem}>
                 <Card>
-                    <TouchableOpacity onPress={() => this.showTopicDetails(data)}>
-                        <CardItem header>
-                            <Text style={{ fontSize: 24 }}>{data.title ? data.title : ''}</Text>
-                        </CardItem>
-                    </TouchableOpacity>
+                    <View style={{ flexDirection: 'row' }}>
+                        <TouchableOpacity style={{ flex: 5 }} onPress={() => this.showTopicDetails(data)}>
+                            <CardItem header>
+                                <Text style={{ fontSize: 24 }}>{data.title ? data.title : ''}</Text>
+                            </CardItem>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={{ flex: 1 }} onPress={() => this.removeTopic(data.title)}>
+                            <CardItem header>
+                                <Ionicons name='ios-trash' size={32} color='tomato'></Ionicons>
+                            </CardItem>
+                        </TouchableOpacity>
+                    </View>
                     <FlatList
                         extraData={this.state}
                         horizontal={true}
@@ -73,6 +107,16 @@ export class TopicItem extends React.PureComponent {
                             </View>}
                     ></FlatList>
                 </Card>
+                {/* <Toast
+                    ref="toast"
+                    style={{ backgroundColor: 'tomato' }}
+                    position='bottom'
+                    positionValue={200}
+                    fadeInDuration={500}
+                    fadeOutDuration={500}
+                    opacity={0.8}
+                    textStyle={{ color: 'white' }}
+                /> */}
             </View>
         )
     }

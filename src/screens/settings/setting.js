@@ -138,7 +138,7 @@ class Setting extends React.PureComponent {
                 dropdownTextStyle={styles.textStyleModalDropdown}
                 dropdownTextHighlightStyle={[styles.textStyleModalDropdown, [{ color: 'red' }]]}
                 defaultIndex={0}
-                defaultValue={this.state.settings.wordCount}
+                defaultValue={this.state.settings.wordCount.toString()}
                 onSelect={(index) => this.changeWordCount(index)}
                 options={NUMBERS_LIST}>
                 <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
@@ -159,7 +159,7 @@ class Setting extends React.PureComponent {
                 dropdownTextStyle={styles.textStyleModalDropdown}
                 dropdownTextHighlightStyle={[styles.textStyleModalDropdown, [{ color: 'red' }]]}
                 defaultIndex={0}
-                defaultValue={this.state.settings.wordCount}
+                defaultValue={this.state.settings.wordCount.toString()}
                 onSelect={(index) => this.changeNewCount(index)}
                 options={NEW_LIST}>
                 <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
