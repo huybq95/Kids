@@ -10,11 +10,11 @@ const store = configureStore();
 
 console.disableYellowBox = true;
 AsyncStorage.clear();
-db.initData();
 
 export default class App extends React.Component {
   constructor(props) {
     super(props);
+    db.initData();
   }
 
   render() {

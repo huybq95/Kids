@@ -6,6 +6,18 @@ import { connect } from 'react-redux';
 import * as historyActions from './history.actions';
 
 export class History extends React.PureComponent {
+  static navigationOptions = {
+    headerTitle: 'Lịch sử',
+    headerStyle: {
+      backgroundColor: 'tomato',
+    },
+    headerTintColor: '#fff',
+    headerTitleStyle: {
+      fontSize: 24,
+      fontWeight: 'bold',
+    },
+  }
+
   constructor(props) {
     super(props);
     this.state = {
@@ -31,7 +43,6 @@ export class History extends React.PureComponent {
   }
 
   render() {
-    console.log(this.state.textColor)
     return (
       <View style={styles.container}>
         <Text style={{ color: this.state.textColor }}>{this.state.isUpperCase ? 'History!'.toUpperCase() : 'History!'}</Text>

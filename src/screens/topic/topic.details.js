@@ -18,12 +18,13 @@ import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
 import { Speech } from 'expo';
 import Toast, { DURATION } from 'react-native-easy-toast';
+import { connect } from 'react-redux';
 
 import * as db from '../../db/db';
 
 const widthItem = (Dimensions.get('window').width) / 3
 
-export default class TopicDetails extends React.PureComponent {
+class TopicDetails extends React.PureComponent {
     static navigationOptions = ({ navigation }) => {
         const { params } = navigation.state;
 
@@ -54,6 +55,10 @@ export default class TopicDetails extends React.PureComponent {
             visibleModal: false,
             topicTitle: this.props.navigation.state.params.title || '',
             newWord: null,
+            isEditing: false,
+            selectItem: {},
+            textColor: this.props.settings.textColor || 'black',
+            isUpperCase: this.props.settings.isUpperCase || 'black',
         }
     }
 
@@ -61,126 +66,206 @@ export default class TopicDetails extends React.PureComponent {
         this.loadData()
     }
 
-    speech() {
+    componentDidMount() {
+        this.setState({
+            textColor: this.props.settings.textColor,
+            isUpperCase: this.props.settings.isUpperCase
+        });
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (nextProps && nextProps.settings) {
+            this.setState({
+                textColor: nextProps.settings.textColor,
+                isUpperCase: nextProps.settings.isUpperCase
+            });
+        }
+    }
+
+    speech(text) {
         Speech.stop();
-        Speech.speak(this.state.newWord, { language: 'en-US' });
+        Speech.speak(text, { language: 'vi-VN' });
     }
 
     loadData() {
-        // db.getListWordOfTopic(this.state.topicTitle).then(data => {
-        //     console.log('data set to topic details: ', data)
-        //     this.setState({ words: data })
-        // }).catch(err => {
-        //     console.log(err)
-        // })
+        db.getWordsOfTopic(this.state.topicTitle).then(topic => {
+            this.setState({ words: topic })
+        }).catch(err => { })
     }
 
-    openModal() {
-        this.setState({ visibleModal: true })
+    openModal(isEditing = false) {
+        if (isEditing) {
+            this.setState({ newWord: this.state.selectItem.text })
+        }
+        this.setState({ visibleModal: true, isEditing: isEditing })
     }
 
     closeModal() {
         this.setState({ visibleModal: false })
     }
 
-    showToast() {
-        this.refs.toast.show('Cant add word !')
+    showWordDetails(item) {
+        this.setState({ selectItem: item }, () => {
+            this.openModal(true)
+        })
     }
 
     createNewWord() {
-        let word = {};
+        let newWord = {
+            type: 'word',
+            topic: this.state.topicTitle,
+            lesson: null,
+            text: this.state.newWord,
+            isCompleted: false,
+            isLearning: false,
+            updated: new Date().getTime()
+        }
+        // console.log('newWord', newWord)
+        db.createNewWord(newWord).then(() => {
+            this.closeModal();
+            this.loadData();
+        }).catch(err => {
+            this.showToast('Cant add new word !')
+        });
+    }
+
+    updateWord() {
+        let word = this.state.selectItem;
         word.text = this.state.newWord;
-        word.isCompleted = false;
-        word.isLearning = false;
-        // db.createNewWord(this.state.topicTitle, word)
-        // .then(() => {
-        //     this.loadData();
-        //     this.closeModal();
-        // })
-        // .catch(() => {
-        //     this.closeModal();
-        //     this.showToast();
-        // })
+        db.updateWord(word).then(() => {
+            this.closeModal();
+            this.showToast('Updated !', DURATION.LENGTH_SHORT)
+            this.loadData();
+        }).catch(() => {
+            this.showToast('Cant update new word !')
+        })
+    }
+
+    removeWord(word) {
+        db.removeWord(word).then(() => {
+            this.closeModal();
+            this.loadData();
+        }).catch(err => { })
     }
 
     render() {
-        let { words, visibleModal } = this.state;
-        // console.log(words)
+        let { words, visibleModal, isEditing, newWord } = this.state;
         return (
             <View style={styles.container}>
                 <FlatList
                     extraData={this.state}
                     numColumns={3}
                     data={words}
-                    renderItem={({ item }) => <TouchableOpacity onPress={() => {
-                        // db.removeWord(item._id).then(() => {
-                        //     this.loadData()
-                        // }).catch(err => {
-
-                        // })
-                    }}
+                    renderItem={({ item }) => <TouchableOpacity onPress={() => this.showWordDetails(item)}
                         style={styles.wordItem}>
                         <Card style={{ justifyContent: 'center', alignItems: 'center' }}>
-                            <Text style={{ fontSize: 24 }}>{item.text}</Text>
+                            <Text style={{ fontSize: 24, color: this.state.textColor }}>{this.state.isUpperCase ? `${item.text}`.toUpperCase() : `${item.text}`}</Text>
                         </Card>
                     </TouchableOpacity>}
                 ></FlatList>
                 <Fab openModal={this.openModal.bind(this)} />
-                <Toast
-                    ref='toast'
-                    style={{ backgroundColor: 'tomato' }}
-                    position='bottom'
-                    positionValue={200}
-                    fadeInDuration={500}
-                    fadeOutDuration={500}
-                    opacity={0.8}
-                    textStyle={{ color: 'white' }}
-                />
                 <Modal style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
                     onBackButtonPress={() => this.closeModal()}
                     onBackdropPress={() => this.closeModal()}
                     visible={visibleModal}>
-                    <KeyboardAvoidingView behavior='position'>
-                        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-                            <View style={styles.modal}>
-                                <Card>
-                                    <CardItem style={{ backgroundColor: 'tomato' }} header>
-                                        <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'white' }}>Thêm từ</Text>
-                                    </CardItem>
-                                    <View style={{ flex: 2.5, padding: 16 }}>
-                                        <Text style={{ marginRight: 10, fontSize: 20, marginBottom: 20 }}>Từ mới: </Text>
-                                        <TextInput
-                                            style={{ width: 300, fontSize: 20 }}
-                                            placeholder='Nhập từ mới'
-                                            underlineColorAndroid='transparent'
-                                            onChangeText={(text) => this.setState({ newWord: text })}
-                                        ></TextInput>
-                                        <View style={{ borderBottomColor: 'black', opacity: 0.2, borderBottomWidth: 1, padding: 5 }}></View>
-                                        <TouchableOpacity onPress={() => this.speech()}
-                                            style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                            <Ionicons style={{ paddingHorizontal: 10 }} name='ios-play' color='tomato' size={48}></Ionicons>
-                                            <Text style={{ fontSize: 20 }}>Nghe thử</Text>
-                                        </TouchableOpacity>
+                    {
+                        !isEditing ?
+                            <KeyboardAvoidingView behavior='position'>
+                                <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+                                    <View style={styles.modal}>
+                                        <Card>
+                                            <CardItem style={{ backgroundColor: 'tomato' }} header>
+                                                <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'white' }}>Thêm từ</Text>
+                                            </CardItem>
+                                            <View style={{ flex: 2.5, padding: 16 }}>
+                                                <Text style={{ marginRight: 10, fontSize: 20 }}>Từ mới: </Text>
+                                                <TextInput
+                                                    style={{ width: 300, height: 30, marginTop: 20, fontSize: 20 }}
+                                                    placeholder='Nhập từ mới'
+                                                    underlineColorAndroid='transparent'
+                                                    onChangeText={(text) => this.setState({ newWord: text })}
+                                                ></TextInput>
+                                                <View style={{ borderBottomColor: 'black', opacity: 0.2, borderBottomWidth: 1, padding: 5 }}></View>
+                                                <TouchableOpacity onPress={() => this.speech(newWord)}
+                                                    style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                    <Ionicons style={{ paddingHorizontal: 10 }} name='ios-play' color='tomato' size={48}></Ionicons>
+                                                    <Text style={{ fontSize: 20 }}>Nghe thử</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                            <View style={{ flexDirection: 'row', flex: 1 }}>
+                                                <TouchableOpacity onPress={() => this.createNewWord()}
+                                                    style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                                    <Text>Đồng ý</Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity onPress={() => this.closeModal()}
+                                                    style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                                    <Text>Hủy</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </Card>
                                     </View>
-                                    <View style={{ flexDirection: 'row', flex: 1 }}>
-                                        <TouchableOpacity onPress={() => this.createNewWord()}
-                                            style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                                            <Text>Đồng ý</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity onPress={() => this.closeModal()}
-                                            style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                                            <Text>Hủy</Text>
-                                        </TouchableOpacity>
+                                </TouchableWithoutFeedback>
+                            </KeyboardAvoidingView>
+                            : <KeyboardAvoidingView behavior='position'>
+                                <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+                                    <View style={styles.modal}>
+                                        <Card>
+                                            <CardItem style={{ backgroundColor: 'tomato' }} header>
+                                                <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'white' }}>Sửa từ</Text>
+                                            </CardItem>
+                                            <View style={{ flex: 2.5, padding: 16 }}>
+                                                <Text style={{ marginRight: 10, fontSize: 20 }}>Từ : </Text>
+                                                <TextInput
+                                                    ref='edit'
+                                                    style={{ width: 300, height: 30, marginTop: 20, fontSize: 20 }}
+                                                    placeholder='Nhập từ mới'
+                                                    value={newWord}
+                                                    underlineColorAndroid='transparent'
+                                                    onFocus={() => { this.refs.edit.clear() }}
+                                                    onChangeText={(text) => this.setState({ newWord: text })}
+                                                ></TextInput>
+                                                <View style={{ borderBottomColor: 'black', opacity: 0.2, borderBottomWidth: 1, padding: 5 }}></View>
+                                                <View style={{ flexDirection: 'row', flex: 1 }}>
+                                                    <TouchableOpacity onPress={() => this.speech(newWord)}
+                                                        style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                        <Ionicons style={{ paddingHorizontal: 10 }} name='ios-play' color='tomato' size={48}></Ionicons>
+                                                        <Text style={{ fontSize: 20 }}>Nghe thử</Text>
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity onPress={() => this.removeWord(this.state.selectItem)}
+                                                        style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                        <Ionicons style={{ paddingHorizontal: 10 }} name='ios-trash' color='tomato' size={48}></Ionicons>
+                                                        <Text style={{ fontSize: 20 }}>Xóa</Text>
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </View>
+                                            <View style={{ flexDirection: 'row', flex: 1 }}>
+                                                <TouchableOpacity onPress={() => this.updateWord()}
+                                                    style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                                    <Text>Đồng ý</Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity onPress={() => this.closeModal()}
+                                                    style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                                    <Text>Hủy</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </Card>
                                     </View>
-                                </Card>
-                            </View>
-                        </TouchableWithoutFeedback>
-                    </KeyboardAvoidingView>
+                                </TouchableWithoutFeedback>
+                            </KeyboardAvoidingView>
+                    }
                 </Modal>
             </View>
         );
     }
 }
+
+function mapStateToProps(state, ownProps) {
+    return {
+        settings: state.settings
+    };
+}
+
+export default connect(mapStateToProps)(TopicDetails);
 
 const styles = StyleSheet.create({
     container: { flex: 1 },

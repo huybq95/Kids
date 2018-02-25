@@ -1,5 +1,6 @@
 import React from 'react';
-import { Text, View, StyleSheet, Switch, TouchableOpacity, Picker, PickerIOS } from 'react-native';
+import { Text, View, StyleSheet, Platform,
+   Switch, TouchableOpacity, Picker, PickerIOS } from 'react-native';
 import { TabNavigator } from 'react-navigation';
 import ModalDropdown from 'react-native-modal-dropdown';
 import { Ionicons } from '@expo/vector-icons';
@@ -39,7 +40,13 @@ class Setting extends React.PureComponent {
   }
 
   componentWillMount() {
-    db.getSetting(this.getSettingsCallback.bind(this));
+    this.loadData();
+  }
+
+  loadData() {
+    db.getSetting().then(data => {
+      this.getSettingsCallback(data);
+    }).catch(err => { });
   }
 
   getSettingsCallback(data) {
@@ -61,7 +68,9 @@ class Setting extends React.PureComponent {
     objSetting.numsWord = data.wordCount || curSetting.wordCount;
     objSetting.numsNewWord = data.newCount || curSetting.newCount;
     objSetting.notification = data.isAlert || curSetting.isAlert;
-    db.saveSetting(objSetting);
+    db.saveSetting(objSetting).then(() => {
+      this.loadData();
+    });
   }
 
   changeTextType(value) {
@@ -111,19 +120,27 @@ class Setting extends React.PureComponent {
           <View style={styles.rowContainer}>
             <Text style={styles.textLeft}>Chữ hoa</Text>
             <View style={styles.rightContainer}>
-              <Switch onTintColor='tomato' onValueChange={(value) => this.changeTextType(value)} value={this.state.settings.isUpperCase} />
+              <Switch thumbTintColor={Platform.OS === 'ios' ? null : 'tomato' } onTintColor='tomato' onValueChange={(value) => this.changeTextType(value)} value={this.state.settings.isUpperCase} />
             </View>
           </View>
           <View style={styles.seperate}></View>
           <View style={styles.rowContainer}>
             <Text style={[styles.textLeft, { color: this.state.settings.textColor }]}>Màu chữ</Text>
             <View style={styles.colorContainer}>
-              <TouchableOpacity style={[styles.circle, { backgroundColor: 'black' }]}
+              <TouchableOpacity style={[styles.circle, { backgroundColor: 'black', justifyContent: 'center', alignItems: 'center' }]}
                 onPress={() => this.changeTextColor('black')}>
+                {
+                  this.state.settings.textColor === 'black' ?
+                  <Ionicons name='ios-checkmark' size={32} color='white'></Ionicons> : null
+                }
               </TouchableOpacity>
               <View style={{ width: 12 }}></View>
-              <TouchableOpacity style={[styles.circle, { backgroundColor: 'tomato' }]}
+              <TouchableOpacity style={[styles.circle, { backgroundColor: 'tomato', justifyContent: 'center', alignItems: 'center' }]}
                 onPress={() => this.changeTextColor('tomato')}>
+                {
+                  this.state.settings.textColor === 'tomato' ?
+                  <Ionicons name='ios-checkmark' size={32} color='white'></Ionicons> : null
+                }
               </TouchableOpacity>
             </View>
           </View>
@@ -173,7 +190,7 @@ class Setting extends React.PureComponent {
         <View style={{ paddingVertical: 8, paddingHorizontal: 16, width: '100%', flexDirection: 'row', alignItems: 'center' }}>
           <Text style={[styles.title, { width: '60%' }]}>Nhắc nhở</Text>
           <View style={styles.rightContainer}>
-            <Switch onTintColor='tomato' onValueChange={(value) => this.changeAlert(value)} value={this.state.settings.isAlert} />
+            <Switch thumbTintColor={Platform.OS === 'ios' ? null : 'tomato' } onTintColor='tomato' onValueChange={(value) => this.changeAlert(value)} value={this.state.settings.isAlert} />
           </View>
         </View>
         <View style={styles.settingsContainer}>

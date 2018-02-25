@@ -45,11 +45,7 @@ export default class Topic extends React.PureComponent {
       // isUpperCase: this.props.settings.isUpperCase || false,
       listTopic: [],
       visibleModal: false,
-      newTopic: {
-        type: TOPIC_TYPE,
-        title: null,
-        words: null
-      }
+      newTopic: ''
     }
   }
 
@@ -93,6 +89,14 @@ export default class Topic extends React.PureComponent {
     this.refs.toast.show('Cant add topic !')
   }
 
+  createTopic() {
+    let title = this.state.newTopic ? this.state.newTopic : '';
+    db.createTopic(title).then(() => {
+      this.loadData();
+      this.closeModal();
+    }).catch(err => { })
+  }
+
   render() {
     let { listTopic, visibleModal } = this.state;
     return (
@@ -112,7 +116,7 @@ export default class Topic extends React.PureComponent {
               <View style={styles.modal}>
                 <Card>
                   <CardItem style={{ backgroundColor: 'tomato' }} header>
-                    <Text style={{ fontSize: 24, fontWeight: 'bold' }}>Thêm chủ đề</Text>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'white' }}>Thêm chủ đề</Text>
                   </CardItem>
                   <View style={{ flex: 2.5, padding: 16 }}>
                     <Text style={{ marginRight: 10, fontSize: 20, marginBottom: 20 }}>Tên chủ đề: </Text>
@@ -120,7 +124,7 @@ export default class Topic extends React.PureComponent {
                       style={{ width: 300, fontSize: 20 }}
                       placeholder='Nhập tên chủ đề'
                       underlineColorAndroid='transparent'
-                      onChangeText={(text) => this.setState({ newTopic: { ...this.state.newTopic, title: text } })}
+                      onChangeText={(text) => this.setState({ newTopic: text })}
                     ></TextInput>
                     <View style={{ borderBottomColor: 'black', opacity: 0.2, borderBottomWidth: 1, padding: 5 }}></View>
                   </View>

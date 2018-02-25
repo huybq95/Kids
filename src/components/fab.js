@@ -12,8 +12,9 @@ export default class Fab extends React.PureComponent {
                 actions={this.props.actions}
                 buttonColor='tomato'
                 // color='tomato'
+                onPressItem={(name) => this.props.onPressItem && this.props.onPressItem(name)}
                 showBackground={false}
-                onPressMain={() => this.props.openModal()}
+                onPressMain={() => this.props.openModal && this.props.openModal()}
             />
         )
     }

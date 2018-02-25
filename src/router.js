@@ -7,6 +7,7 @@ import History from './screens/history/history';
 import Topic from './screens/topic/topic';
 import TopicDetails from './screens/topic/topic.details';
 import Setting from './screens/settings/setting';
+import LessonDetails from './screens/lesson/lesson_details';
 
 const tabRoot = TabNavigator(
     {
@@ -52,5 +53,6 @@ const tabRoot = TabNavigator(
 
 export default StackNavigator({
     Home: tabRoot,
-    TopicDetails: { screen: TopicDetails }
+    TopicDetails: { screen: TopicDetails },
+    LessonDetails: { screen: LessonDetails }
 })
