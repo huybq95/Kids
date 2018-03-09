@@ -1,12 +1,17 @@
 import React from 'react';
-import { Text, View, StyleSheet, Platform,
-   Switch, TouchableOpacity, Picker, PickerIOS } from 'react-native';
+import {
+  Text, View, StyleSheet, Platform,
+  Switch, TouchableOpacity, Picker, PickerIOS, Vibration,
+  TimePickerAndroid, ScrollView
+} from 'react-native';
 import { TabNavigator } from 'react-navigation';
 import ModalDropdown from 'react-native-modal-dropdown';
 import { Ionicons } from '@expo/vector-icons';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import * as settingActions from './setting.actions';
+import moment from 'moment';
+// import {Notifications} from 'expo';
 
 const NUMBERS_LIST = [5, 10, 15];
 const NEW_LIST = [1, 2, 3, 5];
@@ -15,9 +20,10 @@ import * as db from './../../db/db';
 
 class Setting extends React.PureComponent {
   static navigationOptions = {
+    title: 'Cài đặt',
     headerTitle: 'Cài đặt',
     headerStyle: {
-      backgroundColor: 'tomato',
+      backgroundColor: 'red',
     },
     headerTintColor: '#fff',
     headerTitleStyle: {
@@ -34,7 +40,26 @@ class Setting extends React.PureComponent {
         textColor: 'black',
         wordCount: '5',
         newCount: '1',
-        isAlert: false
+        isAlert: false,
+        isManual: true,
+        timeShow: 1000,
+        alerts: [
+          {
+            time: moment(new Date().getTime() + 5000).format('HH:mm'),
+            title: 'Title 1',
+            body: 'Body 1'
+          },
+          {
+            time: moment(new Date().getTime() + 5000).format('HH:mm'),
+            title: 'Title 2',
+            body: 'Body 1'
+          },
+          {
+            time: moment(new Date().getTime() + 5000).format('HH:mm'),
+            title: 'Title 3',
+            body: 'Body 1'
+          }
+        ]
       }
     }
   }
@@ -45,6 +70,7 @@ class Setting extends React.PureComponent {
 
   loadData() {
     db.getSetting().then(data => {
+      console.log('~~~~~', data)
       this.getSettingsCallback(data);
     }).catch(err => { });
   }
@@ -57,6 +83,8 @@ class Setting extends React.PureComponent {
     objSetting.wordCount = data.numsWord || curSetting.numsWord;
     objSetting.newCount = data.numsNewWord || curSetting.numsNewWord;
     objSetting.isAlert = data.notification || curSetting.isAlert;
+    objSetting.alerts = data.alerts || curSetting.alerts;
+    objSetting.isManual = data.isManual || curSetting.isManual;
     this.setState({ settings: objSetting });
   }
 
@@ -68,6 +96,8 @@ class Setting extends React.PureComponent {
     objSetting.numsWord = data.wordCount || curSetting.wordCount;
     objSetting.numsNewWord = data.newCount || curSetting.newCount;
     objSetting.notification = data.isAlert || curSetting.isAlert;
+    objSetting.alerts = data.alerts || curSetting.alerts;
+    objSetting.isManual = data.isManual || curSetting.isManual;
     db.saveSetting(objSetting).then(() => {
       this.loadData();
     });
@@ -80,8 +110,27 @@ class Setting extends React.PureComponent {
     });
   }
 
-  changeAlert(value) {
-    this.setState({ settings: { ...this.state.settings, isAlert: value } }, () => {
+  changeManual(value) {
+    this.setState({ settings: { ...this.state.settings, isManual: value } }, () => {
+      this.props.actions.saveSetting(this.state.settings);
+      this.saveSettings(this.state.settings);
+    });
+  }
+
+  changeTime(data, position) {
+    let { settings } = this.state;
+    let _alerts = settings.alerts;
+    _alerts[position] = data;
+    this.setState({
+      settings: { ...settings, alert: _alerts }
+    }, () => {
+      this.props.saveSettings(this.state.settings);
+    })
+  }
+
+  changeAlert() {
+    // Vibration.vibrate()
+    this.setState({ settings: { ...this.state.settings } }, () => {
       this.props.actions.saveSetting(this.state.settings);
       this.saveSettings(this.state.settings);
     });
@@ -110,9 +159,60 @@ class Setting extends React.PureComponent {
     });
   }
 
+  convertTime(time) {
+    let _time = {};
+    let string = time.split(':');
+    _time.hour = string[0];
+    _time.minute = string[1];
+    return _time;
+  }
+
+  async openTimePickerAndroid(alert) {
+    let timeSet = this.convertTime(alert.time);
+    
+    try {
+      const { action, hour, minute } = await TimePickerAndroid.open({
+        hour: parseFloat(timeSet.hour),
+        minute: parseFloat(timeSet.minute),
+        is24Hour: true,
+        mode: 'spinner'
+      });
+      if (action !== TimePickerAndroid.dismissedAction) {
+        let newTimeSet = this.convertNewTimeSet(hour, minute);
+        let _alert = alert;
+        _alert.time = newTimeSet;
+          this.changeAlert(_alert);
+      }
+    } catch ({ code, message }) {
+      console.warn('Cannot open time picker', message);
+    }
+  }
+
+  convertNewTimeSet(hour, minute) {
+    let newTime = '';
+    if (hour < 10) {
+      newTime = `0${hour}`
+    } else {
+      newTime = `${hour}`
+    }
+    if (minute < 10) {
+      newTime = `${newTime}:0${minute}`
+    } else {
+      newTime = `${newTime}:${minute}`
+    }
+    return newTime;
+  }
+
+  toggleAlert(value) {
+    this.setState({ settings: { ...this.state.settings, isAlert: value } }, () => {
+      this.props.actions.saveSetting(this.state.settings);
+      this.saveSettings(this.state.settings);
+    });
+  }
+
   render() {
     return (
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <View style={{ paddingVertical: 8, paddingHorizontal: 16, width: '100%' }}>
           <Text style={styles.title}>Chung</Text>
         </View>
@@ -120,7 +220,13 @@ class Setting extends React.PureComponent {
           <View style={styles.rowContainer}>
             <Text style={styles.textLeft}>Chữ hoa</Text>
             <View style={styles.rightContainer}>
-              <Switch thumbTintColor={Platform.OS === 'ios' ? null : 'tomato' } onTintColor='tomato' onValueChange={(value) => this.changeTextType(value)} value={this.state.settings.isUpperCase} />
+              <Switch thumbTintColor={Platform.OS === 'ios' ? null : 'red'} onTintColor='red' onValueChange={(value) => this.changeTextType(value)} value={this.state.settings.isUpperCase} />
+            </View>
+          </View>
+          <View style={styles.rowContainer}>
+            <Text style={styles.textLeft}>Thủ công</Text>
+            <View style={styles.rightContainer}>
+              <Switch thumbTintColor={Platform.OS === 'ios' ? null : 'red'} onTintColor='red' onValueChange={(value) => this.changeManual(value)} value={this.state.settings.isManual} />
             </View>
           </View>
           <View style={styles.seperate}></View>
@@ -131,15 +237,15 @@ class Setting extends React.PureComponent {
                 onPress={() => this.changeTextColor('black')}>
                 {
                   this.state.settings.textColor === 'black' ?
-                  <Ionicons name='ios-checkmark' size={32} color='white'></Ionicons> : null
+                    <Ionicons name='ios-checkmark' size={32} color='white'></Ionicons> : null
                 }
               </TouchableOpacity>
               <View style={{ width: 12 }}></View>
-              <TouchableOpacity style={[styles.circle, { backgroundColor: 'tomato', justifyContent: 'center', alignItems: 'center' }]}
-                onPress={() => this.changeTextColor('tomato')}>
+              <TouchableOpacity style={[styles.circle, { backgroundColor: 'red', justifyContent: 'center', alignItems: 'center' }]}
+                onPress={() => this.changeTextColor('red')}>
                 {
-                  this.state.settings.textColor === 'tomato' ?
-                  <Ionicons name='ios-checkmark' size={32} color='white'></Ionicons> : null
+                  this.state.settings.textColor === 'red' ?
+                    <Ionicons name='ios-checkmark' size={32} color='white'></Ionicons> : null
                 }
               </TouchableOpacity>
             </View>
@@ -190,30 +296,26 @@ class Setting extends React.PureComponent {
         <View style={{ paddingVertical: 8, paddingHorizontal: 16, width: '100%', flexDirection: 'row', alignItems: 'center' }}>
           <Text style={[styles.title, { width: '60%' }]}>Nhắc nhở</Text>
           <View style={styles.rightContainer}>
-            <Switch thumbTintColor={Platform.OS === 'ios' ? null : 'tomato' } onTintColor='tomato' onValueChange={(value) => this.changeAlert(value)} value={this.state.settings.isAlert} />
+            <Switch thumbTintColor={Platform.OS === 'ios' ? null : 'red'} onTintColor='red' onValueChange={(value) => this.toggleAlert(value)} value={this.state.settings.isAlert} />
           </View>
         </View>
-        <View style={styles.settingsContainer}>
-          <View style={styles.rowContainer}>
-            <Text style={styles.textLeft}>Lần 1</Text>
-            <Text style={styles.textRight}>09:00</Text>
-          </View>
-        </View>
-        <View style={styles.seperate}></View>
-        <View style={styles.settingsContainer}>
-          <View style={styles.rowContainer}>
-            <Text style={styles.textLeft}>Lần 2</Text>
-            <Text style={styles.textRight}>13:00</Text>
-          </View>
-        </View>
-        <View style={styles.seperate}></View>
-        <View style={styles.settingsContainer}>
-          <View style={styles.rowContainer}>
-            <Text style={styles.textLeft}>Lần 3</Text>
-            <Text style={styles.textRight}>17:00</Text>
-          </View>
-        </View>
-      </View>
+        {
+          this.state.settings.alerts.map((e, i) => {
+            return (
+              <TouchableOpacity onPress={() => this.openTimePickerAndroid(e)}
+                key={i}>
+                <View style={styles.settingsContainer}>
+                  <View style={styles.rowContainer}>
+                    <Text style={styles.textLeft}>{`Lần ${i + 1}`}</Text>
+                    <Text style={styles.textRight}>{e.time}</Text>
+                  </View>
+                </View>
+                <View style={styles.seperate}></View>
+              </TouchableOpacity>
+            )
+          })
+        }
+      </ScrollView>
     );
   }
 }
@@ -235,7 +337,7 @@ export default connect(mapStateToProps, mapDispatchToProps)(Setting);
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
+    // alignItems: 'center',
     backgroundColor: '#07000013'
   },
   title: {

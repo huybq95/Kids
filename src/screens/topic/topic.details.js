@@ -31,7 +31,7 @@ class TopicDetails extends React.PureComponent {
         return {
             title: params ? params.title : 'Topic Details',
             headerStyle: {
-                backgroundColor: 'tomato',
+                backgroundColor: 'red',
             },
             headerTintColor: '#fff',
             headerTitleStyle: {
@@ -63,6 +63,12 @@ class TopicDetails extends React.PureComponent {
     }
 
     componentWillMount() {
+        db.getSetting().then(data => {
+            this.setState({
+                textColor: data.textColor,
+                isUpperCase: data.isUpper
+            });
+        })
         this.loadData()
     }
 
@@ -174,7 +180,7 @@ class TopicDetails extends React.PureComponent {
                                 <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
                                     <View style={styles.modal}>
                                         <Card>
-                                            <CardItem style={{ backgroundColor: 'tomato' }} header>
+                                            <CardItem style={{ backgroundColor: 'red' }} header>
                                                 <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'white' }}>Thêm từ</Text>
                                             </CardItem>
                                             <View style={{ flex: 2.5, padding: 16 }}>
@@ -188,7 +194,7 @@ class TopicDetails extends React.PureComponent {
                                                 <View style={{ borderBottomColor: 'black', opacity: 0.2, borderBottomWidth: 1, padding: 5 }}></View>
                                                 <TouchableOpacity onPress={() => this.speech(newWord)}
                                                     style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                    <Ionicons style={{ paddingHorizontal: 10 }} name='ios-play' color='tomato' size={48}></Ionicons>
+                                                    <Ionicons style={{ paddingHorizontal: 10 }} name='ios-play' color='red' size={48}></Ionicons>
                                                     <Text style={{ fontSize: 20 }}>Nghe thử</Text>
                                                 </TouchableOpacity>
                                             </View>
@@ -210,7 +216,7 @@ class TopicDetails extends React.PureComponent {
                                 <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
                                     <View style={styles.modal}>
                                         <Card>
-                                            <CardItem style={{ backgroundColor: 'tomato' }} header>
+                                            <CardItem style={{ backgroundColor: 'red' }} header>
                                                 <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'white' }}>Sửa từ</Text>
                                             </CardItem>
                                             <View style={{ flex: 2.5, padding: 16 }}>
@@ -228,12 +234,12 @@ class TopicDetails extends React.PureComponent {
                                                 <View style={{ flexDirection: 'row', flex: 1 }}>
                                                     <TouchableOpacity onPress={() => this.speech(newWord)}
                                                         style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                        <Ionicons style={{ paddingHorizontal: 10 }} name='ios-play' color='tomato' size={48}></Ionicons>
+                                                        <Ionicons style={{ paddingHorizontal: 10 }} name='ios-play' color='red' size={48}></Ionicons>
                                                         <Text style={{ fontSize: 20 }}>Nghe thử</Text>
                                                     </TouchableOpacity>
                                                     <TouchableOpacity onPress={() => this.removeWord(this.state.selectItem)}
                                                         style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                        <Ionicons style={{ paddingHorizontal: 10 }} name='ios-trash' color='tomato' size={48}></Ionicons>
+                                                        <Ionicons style={{ paddingHorizontal: 10 }} name='ios-trash' color='red' size={48}></Ionicons>
                                                         <Text style={{ fontSize: 20 }}>Xóa</Text>
                                                     </TouchableOpacity>
                                                 </View>
@@ -277,7 +283,7 @@ const styles = StyleSheet.create({
     modal: {
         height: 300,
         width: Dimensions.get('window').width - 32,
-        // backgroundColor: 'tomato',
+        // backgroundColor: 'red',
         borderRadius: 20
     }
 })

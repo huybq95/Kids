@@ -36,13 +36,6 @@ export class TopicItem extends React.PureComponent {
         }
     }
 
-    componentDidMount() {
-        this.setState({
-            textColor: this.props.settings.textColor,
-            isUpperCase: this.props.settings.isUpperCase
-        });
-    }
-
     componentWillReceiveProps(nextProps) {
         this.setState({
             textColor: nextProps.settings.textColor,
@@ -54,10 +47,6 @@ export class TopicItem extends React.PureComponent {
     showTopicDetails(data) {
         this.props.navigation.navigate('TopicDetails', { title: data.title, reloadData: this.props.loadData })
     }
-
-    // showToast() {
-    //     this.refs.toast.show('Topic deleted !')
-    // }
 
     removeTopic(title) {
         Alert.alert(
@@ -79,6 +68,12 @@ export class TopicItem extends React.PureComponent {
     }
 
     render() {
+        db.getSetting().then(data => {
+            this.setState({
+                textColor: data.textColor,
+                isUpperCase: data.isUpper
+            });
+        })
         let { data } = this.state;
         return (
             <View style={styles.topicItem}>
@@ -91,7 +86,7 @@ export class TopicItem extends React.PureComponent {
                         </TouchableOpacity>
                         <TouchableOpacity style={{ flex: 1 }} onPress={() => this.removeTopic(data.title)}>
                             <CardItem header>
-                                <Ionicons name='ios-trash' size={32} color='tomato'></Ionicons>
+                                <Ionicons name='ios-trash' size={32} color='red'></Ionicons>
                             </CardItem>
                         </TouchableOpacity>
                     </View>
@@ -109,7 +104,7 @@ export class TopicItem extends React.PureComponent {
                 </Card>
                 {/* <Toast
                     ref="toast"
-                    style={{ backgroundColor: 'tomato' }}
+                    style={{ backgroundColor: 'red' }}
                     position='bottom'
                     positionValue={200}
                     fadeInDuration={500}
@@ -136,7 +131,7 @@ const styles = StyleSheet.create({
     modal: {
         height: 300,
         width: Dimensions.get('window').width - 32,
-        // backgroundColor: 'tomato',
+        // backgroundColor: 'red',
         borderRadius: 20
     }
 })

@@ -10,8 +10,8 @@ export default class Fab extends React.PureComponent {
         return (
             <FloatingAction
                 actions={this.props.actions}
-                buttonColor='tomato'
-                // color='tomato'
+                buttonColor='red'
+                // color='red'
                 onPressItem={(name) => this.props.onPressItem && this.props.onPressItem(name)}
                 showBackground={false}
                 onPressMain={() => this.props.openModal && this.props.openModal()}

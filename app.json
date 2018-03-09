@@ -9,6 +9,10 @@
     },
     "android": {
       "package": "com.huybq.glenndoman"
+    },
+    "icon": "./src/img/g.png",
+    "splash": {
+      "image": "./src/img/g.png"
     }
   }
 }

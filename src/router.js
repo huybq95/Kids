@@ -8,6 +8,7 @@ import Topic from './screens/topic/topic';
 import TopicDetails from './screens/topic/topic.details';
 import Setting from './screens/settings/setting';
 import LessonDetails from './screens/lesson/lesson_details';
+import LessonEdit from './screens/lesson/lesson_edit';
 
 const tabRoot = TabNavigator(
     {
@@ -41,7 +42,7 @@ const tabRoot = TabNavigator(
             },
         }),
         tabBarOptions: {
-            activeTintColor: 'tomato',
+            activeTintColor: 'red',
             inactiveTintColor: 'gray',
         },
         tabBarComponent: TabBarBottom,
@@ -54,5 +55,6 @@ const tabRoot = TabNavigator(
 export default StackNavigator({
     Home: tabRoot,
     TopicDetails: { screen: TopicDetails },
-    LessonDetails: { screen: LessonDetails }
+    LessonDetails: { screen: LessonDetails },
+    LessonEdit: { screen: LessonEdit }
 })

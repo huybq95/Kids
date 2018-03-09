@@ -1,29 +1,39 @@
 import React from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import { TabNavigator } from 'react-navigation';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import * as historyActions from './history.actions';
+import { Card, CardItem } from 'native-base';
 
-export class History extends React.PureComponent {
-  static navigationOptions = {
-    headerTitle: 'Lịch sử',
-    headerStyle: {
-      backgroundColor: 'tomato',
-    },
-    headerTintColor: '#fff',
-    headerTitleStyle: {
-      fontSize: 24,
-      fontWeight: 'bold',
-    },
-  }
+import * as historyActions from './history.actions';
+import * as db from '../../db/db';
+
+class History extends React.PureComponent {
+  static navigationOptions = ({ navigation }) => {
+    const { params } = navigation.state;
+    return {
+      title: 'Lịch sử',
+      headerTitle: 'Lịch sử',
+      headerStyle: {
+        backgroundColor: 'red',
+      },
+      headerTintColor: '#fff',
+      headerTitleStyle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+      }
+    }
+  };
 
   constructor(props) {
     super(props);
     this.state = {
       textColor: this.props.settings.textColor || 'black',
-      isUpperCase: this.props.settings.isUpperCase || 'black'
+      isUpperCase: this.props.settings.isUpperCase || false,
+      data: []
     }
+    this.loadData = this.loadData.bind(this)
+    this.loadData();
   }
 
   componentDidMount() {
@@ -31,6 +41,24 @@ export class History extends React.PureComponent {
       textColor: this.props.settings.textColor,
       isUpperCase: this.props.settings.isUpperCase
     });
+  }
+
+  loadData() {
+    db.getSetting().then(data => {
+      this.setState({
+        textColor: data.textColor,
+        isUpperCase: data.isUpper
+      });
+    })
+    db.getHistory().then(data => {
+      this.setState({ data: data })
+    })
+  }
+
+  componentWillMount() {
+    setInterval(() => {
+      this.loadData();
+    }, 1000)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -42,11 +70,39 @@ export class History extends React.PureComponent {
     }
   }
 
+  getListWordToString(words) {
+    let string = '';
+    if (words.length === 0) {
+      return ''
+    }
+    for (var word in words) {
+      string += words[word].text + ', ';
+    }
+    return string;
+  }
+
   render() {
+    let { data } = this.state;
     return (
-      <View style={styles.container}>
-        <Text style={{ color: this.state.textColor }}>{this.state.isUpperCase ? 'History!'.toUpperCase() : 'History!'}</Text>
-      </View>
+      <ScrollView style={styles.container}>
+        {
+          data.length > 0 ?
+            data.map((e, i) => {
+              return (
+                <View key={i} style={styles.history}>
+                  <Card>
+                    <CardItem header>
+                      <Text style={{fontSize: 24, fontWeight: 'bold'}}>{e.timeCompleted}</Text>
+                    </CardItem>
+                    <CardItem style={{alignItems: 'center'}}>
+                      <Text style={{fontSize: 24, color: this.state.textColor}}>{`${this.state.isUpperCase ? this.getListWordToString(e.words).toUpperCase() : this.getListWordToString(e.words)}`}</Text>
+                    </CardItem>
+                  </Card>
+                </View>
+              )
+            }) : null
+        }
+      </ScrollView>
     );
   }
 }
@@ -66,5 +122,8 @@ function mapDispatchToProps(dispatch) {
 export default connect(mapStateToProps, mapDispatchToProps)(History);
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' }
-})
+  container: { flex: 1 },
+  history: {
+    height: Dimensions.get('window').height / 4,
+  }
+});

@@ -25,11 +25,12 @@ import TopicItem from './topic.item';
 
 const TOPIC_TYPE = 'topic';
 
-export default class Topic extends React.PureComponent {
+class Topic extends React.PureComponent {
   static navigationOptions = {
+    title: 'Chủ đề',
     headerTitle: 'Chủ đề',
     headerStyle: {
-      backgroundColor: 'tomato',
+      backgroundColor: 'red',
     },
     headerTintColor: '#fff',
     headerTitleStyle: {
@@ -47,7 +48,12 @@ export default class Topic extends React.PureComponent {
       visibleModal: false,
       newTopic: ''
     }
+    this.loadData();
   }
+
+  // componentWillMount() {
+   
+  // }
 
   // componentDidMount() {
   //   this.setState({
@@ -56,25 +62,23 @@ export default class Topic extends React.PureComponent {
   //   });
   // }
 
-  // componentWillReceiveProps(nextProps) {
-  //   if (nextProps && nextProps.settings) {
-  //     this.setState({
-  //       textColor: nextProps.settings.textColor,
-  //       isUpperCase: nextProps.settings.isUpperCase,
-  //     });
-  //   }
+  // componentWillReceiveProps(nextProps, nextState) {
+  //   this.setState({
+  //     textColor: nextProps.settings.textColor,
+  //     isUpperCase: nextProps.settings.isUpperCase,
+  //   });
   // }
-
-  componentWillMount() {
-    this.loadData();
-  }
 
   loadData() {
     db.getAllTopic().then(data => {
       this.setState({ listTopic: data })
-    }).catch(err => {
-      this.setState({ listTopic: [] })
-    })
+    });
+    // db.getSetting().then(data => {
+    //   this.setState({
+    //     textColor: data.textColor,
+    //     isUpperCase: data.isUpper
+    //   });
+    // })
   }
 
   openModal() {
@@ -115,7 +119,7 @@ export default class Topic extends React.PureComponent {
             <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
               <View style={styles.modal}>
                 <Card>
-                  <CardItem style={{ backgroundColor: 'tomato' }} header>
+                  <CardItem style={{ backgroundColor: 'red' }} header>
                     <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'white' }}>Thêm chủ đề</Text>
                   </CardItem>
                   <View style={{ flex: 2.5, padding: 16 }}>
@@ -146,7 +150,7 @@ export default class Topic extends React.PureComponent {
         <Fab openModal={this.openModal.bind(this)} />
         <Toast
           ref="toast"
-          style={{ backgroundColor: 'tomato' }}
+          style={{ backgroundColor: 'red' }}
           position='bottom'
           positionValue={200}
           fadeInDuration={500}
@@ -158,6 +162,14 @@ export default class Topic extends React.PureComponent {
     );
   }
 }
+
+// function mapStateToProps(state, ownProps) {
+//   return {
+//     settings: state.settings
+//   };
+// }
+
+export default connect()(Topic);
 
 const styles = StyleSheet.create({
   container: {
@@ -173,7 +185,7 @@ const styles = StyleSheet.create({
   modal: {
     height: 300,
     width: Dimensions.get('window').width - 32,
-    // backgroundColor: 'tomato',
+    // backgroundColor: 'red',
     borderRadius: 20
   }
 })

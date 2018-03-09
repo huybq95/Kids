@@ -1,10 +1,14 @@
 import Datastore from 'react-native-local-mongodb';
+import moment from 'moment';
 
 var db = new Datastore({ filename: 'myDatabase', autoload: true });
 db.ensureIndex({ fieldName: 'isFirstLaunchApp', unique: true, sparse: true });
 db.ensureIndex({ fieldName: 'text', unique: true, sparse: true });
 db.ensureIndex({ fieldName: 'id', unique: true, sparse: true });
 db.ensureIndex({ fieldName: 'id1', unique: true, sparse: true });
+db.ensureIndex({ fieldName: 'timeCompleted', unique: true, sparse: true });
+db.ensureIndex({ fieldName: 'alerts', unique: true, sparse: true });
+
 
 const setting = {
     isFirstLaunchApp: true,
@@ -13,7 +17,27 @@ const setting = {
     textColor: 'black',
     numsWord: 5,
     numsNewWord: 1,
-    notification: true
+    notification: true,
+    isAlert: false,
+    isManual: true,
+    timeShow: 3000,
+    alerts: [
+        {
+            time: moment(new Date().getTime() + 60000).format('HH:mm'),
+            title: 'Nhắc nhở',
+            body: 'Lần 1',
+        },
+        {
+            time: moment(new Date().getTime() + 120000).format('HH:mm'),
+            title: 'Nhắc nhở',
+            body: 'Lần 2',
+        },
+        {
+            time: moment(new Date().getTime() + 180000).format('HH:mm'),
+            title: 'Nhắc nhở',
+            body: 'Lần 3',
+        }
+    ]
 }
 
 const words = [
@@ -51,20 +75,17 @@ const words = [
     { type: 'word', topic: 'Hành động', lesson: null, text: 'lăn', isCompleted: false, isLearning: false, updated: new Date().getTime() },
 
     { id: 'topic', list: ['Màu sắc', 'Động vật', 'Hành động'] },
-    { id1: 'lesson', list: [] }
+    // { id1: 'lesson', list: [] },
+    // { history: []}
 ]
 
 export function initData() {
-    return new Promise((resolve, reject) => {
-        db.insert(setting, (err, res) => {
-            // console.log(err)
-            // console.log(db.getAllData())
-        });
-        db.insert(words, (err, res) => {
-            // console.log(err)
-            // console.log(db.getAllData())
-        });
-    })
+    // return new Promise((resolve, reject) => {
+    db.insert(setting, (err, res) => {
+    });
+    db.insert(words, (err, res) => {
+    });
+    // })
 }
 
 export function getSetting() {
@@ -79,7 +100,6 @@ export function getSetting() {
     })
 }
 
-
 export function saveSetting(newSetting) {
     return new Promise((resolve, reject) => {
         db.update({ type: 'setting' }, { $set: newSetting }, (err, res) => {
@@ -92,10 +112,21 @@ export function saveSetting(newSetting) {
     })
 }
 
-export function getAllTopic(title) {
+export function countIsLearning() {
+    return new Promise((resolve, reject) => {
+        db.count({ isLearning: true }, (err, res) => {
+            if (err) {
+                reject(0)
+            } else {
+                resolve(res);
+            }
+        })
+    })
+}
+
+export function getAllTopic() {
     let topics = [];
     let _topics = []
-    console.log(db.getAllData())
     return new Promise((resolve, reject) => {
         db.findOne({ id: 'topic' }, (err, res) => {
             if (res.list.length === 0) {
@@ -122,55 +153,186 @@ export function getAllTopic(title) {
 export function getWordsOfTopic(title) {
     return new Promise((resolve, reject) => {
         db.find({ topic: title }, (err, res) => {
-            // console.log(db.getAllData());
             if (err) {
                 reject(err);
             } else {
                 let words = res.sort((a, b) => {
-                    // if (a.text > b.text) return 1;
-                    // if (a.text < b.text) return -1;
-                    // return 0;
                     return a.text.localeCompare(b.text)
                 })
+                console.log(db.getAllData())
                 resolve(words);
             }
         })
     })
 }
 
-export function getTodayLesson(numsWord) {
-    // eg: 29
-    let date = new Date().getDate();
+export function resetStateIsLearning(words) {
     return new Promise((resolve, reject) => {
-        db.find({ $and: [{ isCompleted: false }] }, (err, res) => {
+        let listLearning = [];
+        for (let i = 0; i < words.length; i++) {
+            const word = words[i];
+            listLearning.push(word.text)
+        }
+        console.log(listLearning)
+        db.find({ $and: [{ type: 'word' }, { text: { $nin: listLearning } }] }, (err, res) => {
             if (err) {
-                reject(err);
+                // console.log()
             } else {
-                let listWordsToLearn = []
-                let words = res.sort((a, b) => {
-                    return a.text.localeCompare(b.text)
-                });
-
-                for (let i = 0; i < numsWord; i++) {
-                    const word = words[i];
-                    listWordsToLearn.push(word);
+                console.log(res)
+                for (let i = 0; i < res.length; i++) {
+                    const wordNotLearning = res[i];
+                    db.update({ _id: wordNotLearning._id }, { $set: { isLearning: false } }, (err, res) => {
+                        if (err) {
+                            reject(err)
+                        } else {
+                            // resolve(res)
+                            db.find({ $and: [{ type: 'word' }, { text: { $in: listLearning } }] }, (err, res) => {
+                                if (err) {
+                                    reject(err)
+                                } else {
+                                    for (let i = 0; i < res.length; i++) {
+                                        const wordIsLearning = res[i];
+                                        db.update({ _id: wordIsLearning._id }, { $set: { isLearning: true } }, (err, res) => {
+                                            if (err) {
+                                                reject(err)
+                                            } else {
+                                                resolve(res)
+                                            }
+                                        })
+                                    }
+                                }
+                            })
+                        }
+                    })
                 }
-                console.log(db.getAllData())
-                resolve(listWordsToLearn);
             }
         })
     })
 }
 
-export function saveHistory(lesson) {
+export function getTodayLesson(numsWord) {
     return new Promise((resolve, reject) => {
-        db.insert(lesson, (err, res) => {
+        db.find({$and: [{ isLearning: true }, {isCompleted: false}]}, (err, res) => {
+            if (err) {
+            } else {
+                if (res.length === 0) {
+                    let listWordsLearning = [];
+                    getAllWords().then(words => {
+                        for (let i = 0; i < numsWord; i++) {
+                            const wordLearning = words[i];
+                            listWordsLearning.push(wordLearning);
+                            db.update({ _id: wordLearning._id }, { $set: { isLearning: true } })
+                        }
+                        resetStateIsLearning(listWordsLearning).then(() => {
+                            resolve(listWordsLearning);
+                        })
+                    })
+                } else if (res.length < numsWord) {
+                    let listWordsLearning = [];
+                    getAllWords().then(words => {
+                        for (let i = 0; i < numsWord; i++) {
+                            const wordLearning = words[i];
+                            listWordsLearning.push(wordLearning);
+                            db.update({ _id: wordLearning._id }, { $set: { isLearning: true } })
+                        }
+                        resetStateIsLearning(listWordsLearning).then(() => {
+                            resolve(listWordsLearning);
+                        })
+                    })
+                } else if (res.length > numsWord) {
+                    let listWordsLearning = [];
+                    getAllWords().then(words => {
+                        for (let i = 0; i < numsWord; i++) {
+                            const wordLearning = words[i];
+                            listWordsLearning.push(wordLearning);
+                            db.update({ _id: wordLearning._id }, { $set: { isLearning: true } })
+                        }
+                        resetStateIsLearning(listWordsLearning).then(() => {
+                            resolve(listWordsLearning);
+                        })
+                    })
+                } else {
+                    resetStateIsLearning(res).then(() => {
+                        resolve(res);
+                    })
+                }
+            }
+        })
+    })
+}
+
+export function toggleIsComplete(word) {
+    return new Promise((resolve, reject) => {
+        db.update({ _id: word._id }, { $set: { isCompleted: !word.isCompleted } }, (err, res) => {
+            if (err) {
+                reject(err)
+            } else {
+                db.update({ _id: word._id }, { $set: { isLearning: true } }, (err, res) => {
+                    if (err) {
+                        reject(err)
+                    } else {
+                        resolve(res)
+                    }
+                })
+            }
+        })
+    })
+}
+
+export function toggleIsLearning(word) {
+    return new Promise((resolve, reject) => {
+        db.update({ _id: word._id }, { $set: { isLearning: !word.isLearning } }, (err, res) => {
             if (err) {
                 reject(err)
             } else {
                 resolve(res)
             }
+        })
+    })
+}
+
+export function getAllWords() {
+    return new Promise((resolve, reject) => {
+        db.find({ type: 'word' }, (err, res) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(res)
+            }
+        })
+    })
+}
+
+export function saveHistory(words, numsNewWord) {
+    return new Promise((resolve, reject) => {
+        let history = {};
+        history.words = words
+        history.type = 'history';
+        history.timeCompleted = moment(new Date().getTime()).format('DD MMM YYYY');
+        db.insert(history, (err, res) => {
+            if (err) {
+                reject(err)
+            } else {
+                for (let i = 0; i < numsNewWord; i++) {
+                    let word = history.words[i];
+                    db.update({ _id: word._id }, { $set: { isCompleted: true } })
+                    db.update({ _id: word._id }, { $set: { isLearning: false } })
+                }
+            }
         });
+    })
+}
+
+export function editLesson(lesson) {
+    return new Promise((resolve, reject) => {
+        db.update({ _id: lesson._id }, { $set: lesson }, (err, res) => {
+            if (err) {
+                reject(err)
+            } else {
+                console.log('Updated !')
+                resolve();
+            }
+        })
     })
 }
 
@@ -178,8 +340,11 @@ export function removeTopic(title) {
     return new Promise((resolve, reject) => {
         db.update({ id: 'topic' }, { $pull: { list: title } }, {}, () => {
             db.remove({ topic: title }, { multi: true }, (err, res) => {
-                console.log(db.getAllData());
-                resolve();
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve(res)
+                }
             });
         })
     })
@@ -200,9 +365,11 @@ export function createNewWord(word) {
 export function createTopic(title) {
     return new Promise((resolve, reject) => {
         db.update({ id: 'topic' }, { $push: { list: `${title}` } }, (err, res) => {
-            console.log(db.getAllData());
-            resolve();
-            reject();
+            if (err) {
+                reject(err)
+            } else {
+                resolve(res)
+            }
         })
     })
 }
@@ -210,9 +377,11 @@ export function createTopic(title) {
 export function updateWord(word) {
     return new Promise((resolve, reject) => {
         db.update({ _id: word._id }, { $set: { text: word.text } }, (err, res) => {
-            console.log(db.getAllData());
-            resolve(res);
-            reject(err);
+            if (err) {
+                reject(err)
+            } else {
+                resolve(res)
+            }
         })
     })
 }
@@ -224,6 +393,18 @@ export function removeWord(word) {
                 reject(err)
             } else {
                 resolve(res)
+            }
+        })
+    })
+}
+
+export function getHistory() {
+    return new Promise((resolve, reject) => {
+        db.find({ type: 'history' }, (err, res) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(res);
             }
         })
     })

@@ -5,10 +5,14 @@ import { Card, CardItem } from 'native-base';
 import moment from 'moment';
 import { Ionicons } from '@expo/vector-icons';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import {Notifications} from 'expo';
+import {FloatingAction} from 'react-native-floating-action';
 
 import Fab from '../../components/fab';
 import * as db from '../../db/db';
 import { FlatList } from 'react-native-gesture-handler';
+import * as settingActions from '../settings/setting.actions';
 
 const WIDTH = (Dimensions.get('window').width - 56) / 3;
 const HEIGHT = (Dimensions.get('window').height - 300) / 5;
@@ -17,20 +21,21 @@ const actions = [{
   icon: require('../../img/play.png'),
   name: 'bt_learn',
   position: 1,
-  color: 'tomato'
+  color: 'red'
 }, {
   text: 'Sửa',
   icon: require('../../img/edit.png'),
   name: 'bt_edit',
   position: 2,
-  color: 'tomato'
+  color: 'red'
 }];
 
 class Lesson extends React.PureComponent {
   static navigationOptions = {
+    title: 'Bài học',
     headerTitle: 'Bài học',
     headerStyle: {
-      backgroundColor: 'tomato',
+      backgroundColor: 'red',
     },
     headerTintColor: '#fff',
     headerTitleStyle: {
@@ -44,27 +49,55 @@ class Lesson extends React.PureComponent {
     this.state = {
       data: [],
       textColor: this.props.settings.textColor || 'black',
-      isUpperCase: this.props.settings.isUpperCase || 'black',
+      isUpperCase: this.props.settings.isUpperCase || false,
       wordCount: this.props.settings.wordCount || '5'
     }
   }
 
   componentWillMount() {
-    let numsWord = parseInt(this.state.wordCount);
-    this.loadData()
+    db.getSetting().then(data => {
+      this.setState({
+        textColor: data.textColor,
+        isUpperCase: data.isUpper,
+        wordCount: data.numsWord
+      }, () => {
+        this.loadData();
+      });
+    });
   }
 
-  loadData() {
-    db.getTodayLesson(this.state.wordCount).then(data => {
-      this.setState({ data: data })
-    })
+  convertTime(time) {
+    let _time = {};
+    let string = time.split(':');
+    _time.hour = string[0];
+    _time.minute = string[1];
+    return _time;
   }
 
   componentDidMount() {
-    this.setState({
-      textColor: this.props.settings.textColor,
-      isUpperCase: this.props.settings.isUpperCase
-    });
+    this.props.settings.alerts.map((e, i) => {
+      let _time = this.convertTime(e.time);
+      let date = new Date();
+      date.setHours(_time.hour);
+      date.setMinutes(_time.minute);
+      Notifications.scheduleLocalNotificationAsync(
+        {
+          title: e.title,
+          body: e.body,
+          sound: true,
+          vibrate: 500,
+          priority: 'hight'
+        },
+        {
+          time: date
+        })
+    })
+  }
+
+  loadData() {
+    db.getTodayLesson(parseInt(this.state.wordCount)).then(data => {
+      this.setState({ data: data })
+    })
   }
 
   componentWillReceiveProps(nextProps) {
@@ -73,19 +106,21 @@ class Lesson extends React.PureComponent {
         textColor: nextProps.settings.textColor,
         isUpperCase: nextProps.settings.isUpperCase,
         wordCount: nextProps.settings.wordCount
-      }, () => this.loadData());
+      }, () => {
+        this.loadData();
+      });
     }
   }
 
   onPressItem(name) {
     switch (name) {
       case 'bt_learn':
+        db.resetStateIsLearning(this.state.data);
         this.props.navigation.navigate('LessonDetails', { data: this.state.data })
         break;
       case 'bt_edit':
-
+        this.props.navigation.navigate('LessonEdit', { data: this.state.data, counter: this.state.wordCount, loadData: this.loadData.bind(this) })
         break;
-
       default:
         break;
     }
@@ -99,13 +134,10 @@ class Lesson extends React.PureComponent {
           <CardItem header>
             <Text style={{ fontSize: 32, color: 'black' }}>{`Hôm nay, ${moment(new Date().getTime()).format('DD MMM YYYY')}`}</Text>
           </CardItem>
-          {/* <Text style={{ fontSize: 32, color: 'grey', paddingHorizontal: 16 }}>{``}</Text> */}
-          <View style={{ borderBottomColor: 'tomato', borderBottomWidth: 1 }}></View>
+          <View style={{ borderBottomColor: 'red', borderBottomWidth: 1 }}></View>
           <CardItem>
-            <FlatList style={{ marginBottom: 56}}
-              // scrollEnabled={false}
+            <FlatList style={{ marginBottom: 56 }}
               extraData={this.state}
-              // numColumns={3}
               data={data}
               renderItem={({ item }) =>
                 <Text numberOfLines={2} ellipsizeMode='tail'
@@ -117,8 +149,8 @@ class Lesson extends React.PureComponent {
                 </Text>}
             ></FlatList>
           </CardItem>
+          <Fab actions={actions} onPressItem={this.onPressItem.bind(this)} />
         </Card>
-        <Fab actions={actions} onPressItem={this.onPressItem.bind(this)} />
       </View>
     );
   }
@@ -130,7 +162,13 @@ function mapStateToProps(state, ownProps) {
   };
 }
 
-export default connect(mapStateToProps)(Lesson);
+function mapDispatchToProps(dispatch) {
+  return {
+    actions: bindActionCreators(settingActions, dispatch)
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Lesson);
 
 const styles = StyleSheet.create({
   container: { flex: 1 }
