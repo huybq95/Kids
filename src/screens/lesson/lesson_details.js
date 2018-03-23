@@ -21,7 +21,7 @@ export class LessonDetails extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      textColor: this.props.settings.textColor || 'black',
+      textColor: this.props.settings.textColor || 'red',
       isUpperCase: this.props.settings.isUpperCase || 'black',
       index: 0
     }
@@ -102,7 +102,7 @@ export class LessonDetails extends React.PureComponent {
               <Text style={{ color: this.state.textColor, fontSize: 56 }}>{this.state.isUpperCase ? `${item.text}`.toUpperCase() : `${item.text}`}</Text>
               <FloatingAction
                 actions={this.props.actions}
-                buttonColor='red'
+                buttonColor='#fcfcfc'
                 floatingIcon={<Ionicons name='ios-play' size={24} color='white'></Ionicons>}
                 onPressItem={(name) => this.props.onPressItem && this.props.onPressItem(name)}
                 showBackground={false}
