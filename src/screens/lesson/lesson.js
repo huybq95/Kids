@@ -32,7 +32,7 @@ const actions = [{
 
 class Lesson extends React.PureComponent {
   static navigationOptions = {
-    title: 'Bài học',
+    title: 'BÀI HỌC HÔM NAY',
     headerTitle: 'Bài học',
     headerStyle: {
       backgroundColor: 'red',
@@ -48,7 +48,7 @@ class Lesson extends React.PureComponent {
     super(props)
     this.state = {
       data: [],
-      textColor: this.props.settings.textColor || 'black',
+      textColor: this.props.settings.textColor || 'red',
       isUpperCase: this.props.settings.isUpperCase || false,
       wordCount: this.props.settings.wordCount || '5'
     }
@@ -132,7 +132,7 @@ class Lesson extends React.PureComponent {
       <View style={styles.container}>
         <Card style={{}}>
           <CardItem header>
-            <Text style={{ fontSize: 32, color: 'black' }}>{`Hôm nay, ${moment(new Date().getTime()).format('DD MMM YYYY')}`}</Text>
+            <Text style={{ fontSize: 32, color: 'black' }}>{`${moment(new Date().getTime()).format('DD/MM/YYYY')}`}</Text>
           </CardItem>
           <View style={{ borderBottomColor: 'red', borderBottomWidth: 1 }}></View>
           <CardItem>
