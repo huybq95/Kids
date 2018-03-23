@@ -13,7 +13,7 @@ import * as settingActions from './setting.actions';
 import moment from 'moment';
 // import {Notifications} from 'expo';
 
-const NUMBERS_LIST = [5, 10, 15];
+const NUMBERS_LIST = [5, 10, 15, 20];
 const NEW_LIST = [1, 2, 3, 5];
 
 import * as db from './../../db/db';
@@ -37,7 +37,7 @@ class Setting extends React.PureComponent {
     this.state = {
       settings: {
         isUpperCase: false,
-        textColor: 'black',
+        textColor: 'red',
         wordCount: '5',
         newCount: '1',
         isAlert: false,
@@ -257,7 +257,7 @@ class Setting extends React.PureComponent {
               <ModalDropdown
                 style={{ justifyContent: 'center', alignItems: 'center' }}
                 textStyle={styles.textStyleModalDropdown}
-                dropdownStyle={{ width: 40 }}
+                dropdownStyle={{ width: 80 }}
                 dropdownTextStyle={styles.textStyleModalDropdown}
                 dropdownTextHighlightStyle={[styles.textStyleModalDropdown, [{ color: 'red' }]]}
                 defaultIndex={0}
@@ -278,7 +278,7 @@ class Setting extends React.PureComponent {
               <ModalDropdown
                 style={{ justifyContent: 'center', alignItems: 'center' }}
                 textStyle={styles.textStyleModalDropdown}
-                dropdownStyle={{ width: 40 }}
+                dropdownStyle={{ width: 80 }}
                 dropdownTextStyle={styles.textStyleModalDropdown}
                 dropdownTextHighlightStyle={[styles.textStyleModalDropdown, [{ color: 'red' }]]}
                 defaultIndex={0}
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
     width: '100%',
     color: 'black',
     opacity: 0.54,
-    fontSize: 20
+    fontSize: 24
   },
   seperate: {
     width: '100%',
@@ -354,14 +354,14 @@ const styles = StyleSheet.create({
   textLeft: {
     color: 'black',
     opacity: 0.87,
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '400',
     width: '60%'
   },
   textRight: {
     color: 'black',
     opacity: 0.87,
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '400',
     textAlign: 'right',
     width: '40%'
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
   textStyleModalDropdown: {
     color: 'black',
     opacity: 0.87,
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '400',
   },
   rightContainer: {
