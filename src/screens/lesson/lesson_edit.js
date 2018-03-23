@@ -25,7 +25,7 @@ class LessonEdit extends React.PureComponent {
             words: [],
             wordCount: parseInt(this.props.navigation.state.params.counter),
             counter: 0,
-            textColor: this.props.settings.textColor || 'black',
+            textColor: this.props.settings.textColor || 'red',
             isUpperCase: this.props.settings.isUpperCase || false,
         }
     }
@@ -67,8 +67,8 @@ class LessonEdit extends React.PureComponent {
                 'Bạn có muốn học lại từ này ?',
                 '',
                 [
-                    { text: 'Hủy', onPress: () => { return; } },
-                    { text: 'Đồng ý', onPress: () => db.toggleIsComplete(word) },
+                    { text: 'Không', onPress: () => { return; } },
+                    { text: 'Có', onPress: () => db.toggleIsComplete(word) },
                 ],
                 { cancelable: false }
             )
@@ -107,17 +107,17 @@ class LessonEdit extends React.PureComponent {
                                     </Text>
                                     <View style={{ padding: 16 }}>
                                         <FlatList
-                                            numColumns={4}
+                                            numColumns={3}
                                             extraData={this.state}
                                             data={item.words}
                                             renderItem={({ item }) => {
                                                 return (
                                                     <TouchableOpacity onPress={() => this.toggleIsLearningState(item)}
                                                         key={item._id} style={[styles.word]}>
-                                                        <Card style={{ justifyContent: 'center', alignItems: 'center', backgroundColor: item.isCompleted ? 'grey' : 'white' }}>
+                                                        <Card style={{ justifyContent: 'center', alignItems: 'center', backgroundColor: item.isCompleted ? '#fcfcfc' : 'white' }}>
                                                             {
                                                                 item.isLearning ?
-                                                                    <Ionicons style={{ position: 'absolute', top: 0, right: 10 }} name='ios-checkmark' size={32} color='green'></Ionicons> : null
+                                                                    <Ionicons style={{ position: 'absolute', top: 0, right: 10 }} name='ios-checkmark' size={32} color='red'></Ionicons> : null
                                                             }
                                                             <Text style={{ color: this.state.textColor }}>{`${this.state.isUpperCase ? item.text.toUpperCase() : item.text}`}</Text>
                                                         </Card>
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'white'
     },
     word: {
-        width: (Dimensions.get('window').width - 32) / 4,
-        height: (Dimensions.get('window').width - 32) / 4
+        width: (Dimensions.get('window').width - 32) / 3,
+        height: (Dimensions.get('window').width - 32) / 3
     }
 })
