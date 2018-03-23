@@ -12,7 +12,7 @@ class History extends React.PureComponent {
   static navigationOptions = ({ navigation }) => {
     const { params } = navigation.state;
     return {
-      title: 'Lịch sử',
+      title: 'LỊCH SỬ',
       headerTitle: 'Lịch sử',
       headerStyle: {
         backgroundColor: 'red',
@@ -28,7 +28,7 @@ class History extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      textColor: this.props.settings.textColor || 'black',
+      textColor: this.props.settings.textColor || 'red',
       isUpperCase: this.props.settings.isUpperCase || false,
       data: []
     }
