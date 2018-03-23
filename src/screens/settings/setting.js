@@ -20,7 +20,7 @@ import * as db from './../../db/db';
 
 class Setting extends React.PureComponent {
   static navigationOptions = {
-    title: 'Cài đặt',
+    title: 'CÀI ĐẶT',
     headerTitle: 'Cài đặt',
     headerStyle: {
       backgroundColor: 'red',
@@ -43,6 +43,8 @@ class Setting extends React.PureComponent {
         isAlert: false,
         isManual: true,
         timeShow: 1000,
+        // a sửa phần time giúp e mặc định k để moment nhé vì khi bật nhắc nhở, nó sẽ hiện 3 lần noti luôn
+        // set time default: 10:00 - 10:15 - 10:30 
         alerts: [
           {
             time: moment(new Date().getTime() + 5000).format('HH:mm'),
