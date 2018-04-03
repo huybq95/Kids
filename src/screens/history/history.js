@@ -12,8 +12,8 @@ class History extends React.PureComponent {
   static navigationOptions = ({ navigation }) => {
     const { params } = navigation.state;
     return {
-      title: 'LỊCH SỬ',
-      headerTitle: 'Lịch sử',
+      title: 'Lịch sử',
+      headerTitle: 'LỊCH SỬ',
       headerStyle: {
         backgroundColor: 'red',
       },
@@ -92,7 +92,7 @@ class History extends React.PureComponent {
                 <View key={i} style={styles.history}>
                   <Card>
                     <CardItem header>
-                      <Text style={{fontSize: 24, fontWeight: 'bold'}}>{e.timeCompleted}</Text>
+                      <Text style={{fontSize: 24, fontWeight: 'bold'}}>{e.timeCompleted}</Text> //format day dd/mm/yyyy
                     </CardItem>
                     <CardItem style={{alignItems: 'center'}}>
                       <Text style={{fontSize: 24, color: this.state.textColor}}>{`${this.state.isUpperCase ? this.getListWordToString(e.words).toUpperCase() : this.getListWordToString(e.words)}`}</Text>
