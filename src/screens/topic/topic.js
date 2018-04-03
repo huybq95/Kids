@@ -28,7 +28,7 @@ const TOPIC_TYPE = 'topic';
 class Topic extends React.PureComponent {
   static navigationOptions = {
     title: 'Chủ đề',
-    headerTitle: 'Chủ đề',
+    headerTitle: 'CHỦ ĐỀ',
     headerStyle: {
       backgroundColor: 'red',
     },
@@ -133,13 +133,13 @@ class Topic extends React.PureComponent {
                     <View style={{ borderBottomColor: 'black', opacity: 0.2, borderBottomWidth: 1, padding: 5 }}></View>
                   </View>
                   <View style={{ flexDirection: 'row', flex: 1 }}>
-                    <TouchableOpacity onPress={() => this.createTopic()}
-                      style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                      <Text>Đồng ý</Text>
-                    </TouchableOpacity>
                     <TouchableOpacity onPress={() => this.closeModal()}
                       style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                       <Text>Hủy</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => this.createTopic()}
+                      style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                      <Text>Lưu</Text>
                     </TouchableOpacity>
                   </View>
                 </Card>
