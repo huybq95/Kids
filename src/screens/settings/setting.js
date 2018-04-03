@@ -13,15 +13,15 @@ import * as settingActions from './setting.actions';
 import moment from 'moment';
 // import {Notifications} from 'expo';
 
-const NUMBERS_LIST = [5, 10, 15, 20];
-const NEW_LIST = [1, 2, 3, 5];
+const NUMBERS_LIST = [5, 10, 15, 20, 25];
+const NEW_LIST = [1, 2, 3, 4, 5];
 
 import * as db from './../../db/db';
 
 class Setting extends React.PureComponent {
   static navigationOptions = {
-    title: 'CÀI ĐẶT',
-    headerTitle: 'Cài đặt',
+    title: 'Cài đặt',
+    headerTitle: 'CÀI ĐẶT',
     headerStyle: {
       backgroundColor: 'red',
     },
