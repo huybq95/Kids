@@ -54,14 +54,14 @@ export class TopicItem extends React.PureComponent {
             '',
             [
                 {
-                    text: 'OK', onPress: () => {
+                    text: 'Có', onPress: () => {
                         db.removeTopic(title).then(() => {
                             // this.showToast();
                             this.props.loadData();
                         }).catch(err => { })
                     }
                 },
-                { text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
+                { text: 'Không', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
             ],
             { cancelable: false }
         )
