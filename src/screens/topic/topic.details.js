@@ -195,18 +195,18 @@ class TopicDetails extends React.PureComponent {
                                                 <TouchableOpacity onPress={() => this.speech(newWord)}
                                                     style={{ flexDirection: 'row', alignItems: 'center' }}>
                                                     <Ionicons style={{ paddingHorizontal: 10 }} name='ios-play' color='red' size={48}></Ionicons>
-                                                    <Text style={{ fontSize: 20 }}>Nghe thử</Text>
+                                                    <Text style={{ fontSize: 20 }}>Nghe</Text>
                                                 </TouchableOpacity>
                                             </View>
                                             <View style={{ flexDirection: 'row', flex: 1 }}>
-                                                <TouchableOpacity onPress={() => this.createNewWord()}
-                                                    style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                                                    <Text>Đồng ý</Text>
-                                                </TouchableOpacity>
                                                 <TouchableOpacity onPress={() => this.closeModal()}
                                                     style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                                                     <Text>Hủy</Text>
                                                 </TouchableOpacity>
+                                                <TouchableOpacity onPress={() => this.createNewWord()}
+                                                    style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                                    <Text>Lưu</Text>
+                                                 </TouchableOpacity>
                                             </View>
                                         </Card>
                                     </View>
@@ -235,7 +235,7 @@ class TopicDetails extends React.PureComponent {
                                                     <TouchableOpacity onPress={() => this.speech(newWord)}
                                                         style={{ flexDirection: 'row', alignItems: 'center' }}>
                                                         <Ionicons style={{ paddingHorizontal: 10 }} name='ios-play' color='red' size={48}></Ionicons>
-                                                        <Text style={{ fontSize: 20 }}>Nghe thử</Text>
+                                                        <Text style={{ fontSize: 20 }}>Nghe</Text>
                                                     </TouchableOpacity>
                                                     <TouchableOpacity onPress={() => this.removeWord(this.state.selectItem)}
                                                         style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -245,14 +245,13 @@ class TopicDetails extends React.PureComponent {
                                                 </View>
                                             </View>
                                             <View style={{ flexDirection: 'row', flex: 1 }}>
-                                                <TouchableOpacity onPress={() => this.updateWord()}
-                                                    style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                                                    <Text>Đồng ý</Text>
-                                                </TouchableOpacity>
                                                 <TouchableOpacity onPress={() => this.closeModal()}
                                                     style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                                                     <Text>Hủy</Text>
                                                 </TouchableOpacity>
+                                                <TouchableOpacity onPress={() => this.createNewWord()}
+                                                    style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                                    <Text>Lưu</Text>
                                             </View>
                                         </Card>
                                     </View>
