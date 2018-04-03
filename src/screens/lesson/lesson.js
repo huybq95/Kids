@@ -29,11 +29,11 @@ const actions = [{
   position: 2,
   color: 'red'
 }];
-
+// action chỉ để Học còn Sửa để góc trên bên phải ngang với title
 class Lesson extends React.PureComponent {
   static navigationOptions = {
-    title: 'BÀI HỌC HÔM NAY',
-    headerTitle: 'Bài học',
+    title: 'Bài học',
+    headerTitle: 'BÀI HỌC HÔM NAY',
     headerStyle: {
       backgroundColor: 'red',
     },
