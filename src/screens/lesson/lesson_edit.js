@@ -86,13 +86,13 @@ class LessonEdit extends React.PureComponent {
         return (
             <View style={styles.container}>
                 <View style={{ height: Platform.OS === 'ios' ? 76 : 56, backgroundColor: 'red', alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', padding: 16 }}>
-                    <Text style={{ marginTop: Platform.OS === 'ios' ? 20 : 0, fontSize: 24, color: 'white', fontWeight: 'bold' }}>{`Số từ: ${counter} / ${wordCount}`}</Text>
+                    <Text style={{ marginTop: Platform.OS === 'ios' ? 20 : 0, fontSize: 24, color: 'white' }}>{`Số từ: ${counter} / ${wordCount}`}</Text>
                     <TouchableOpacity onPress={() => {
                         this.props.navigation.goBack();
                         this.props.navigation.state.params.loadData();
                     }}
                         style={{ marginTop: Platform.OS === 'ios' ? 20 : 0 }}>
-                        <Text style={{ fontSize: 24, color: 'white', fontWeight: 'bold' }}>Lưu</Text>
+                        <Text style={{ fontSize: 24, color: 'white' }}>Lưu</Text>
                     </TouchableOpacity>
                 </View>
                 {
