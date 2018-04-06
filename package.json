@@ -24,7 +24,7 @@
     "moment": "^2.20.1",
     "native-base": "^2.3.9",
     "react": "16.2.0",
-    "react-native": "0.52.0",
+    "react-native": "^0.52.0",
     "react-native-easy-toast": "^1.0.9",
     "react-native-floating-action": "^1.9.0",
     "react-native-local-mongodb": "^1.9.1",
