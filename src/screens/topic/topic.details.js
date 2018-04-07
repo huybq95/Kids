@@ -178,6 +178,7 @@ class TopicDetails extends React.PureComponent {
     return (
       <View style={styles.container}>
         <FlatList
+          keyExtractor={(item, index) => index}
           extraData={this.state}
           numColumns={3}
           data={words}

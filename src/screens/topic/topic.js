@@ -22,6 +22,7 @@ import { TabNavigator } from 'react-navigation'
 import * as db from '../../db/db'
 import TopicItem from './topic.item'
 import Constants from '../../constants/Constants'
+import NewWordDialog from '../../components/NewWordDialog'
 
 const TOPIC_TYPE = 'topic'
 
@@ -45,7 +46,8 @@ class Topic extends React.PureComponent {
       // textColor: this.props.settings.textColor || 'black',
       // isUpperCase: this.props.settings.isUpperCase || false,
       listTopic: [],
-      newTopic: ''
+      newTopic: '',
+      visibleModal: false
     }
     this.loadData()
   }
@@ -92,7 +94,7 @@ class Topic extends React.PureComponent {
     this.refs.toast.show('Cant add topic !')
   }
 
-  createTopic() {
+  createTopic = () => {
     let title = this.state.newTopic ? this.state.newTopic : ''
     db
       .createTopic(title)
@@ -100,7 +102,9 @@ class Topic extends React.PureComponent {
         this.loadData()
         this.closeModal()
       })
-      .catch(err => {})
+      .catch(err => {
+        Alert.alert('', err.message)
+      })
   }
 
   render() {
@@ -109,6 +113,7 @@ class Topic extends React.PureComponent {
       <View style={styles.container}>
         {listTopic.length > 0 ? (
           <FlatList
+            keyExtractor={(item, index) => index}
             data={listTopic}
             extraData={this.state}
             renderItem={({ item }) => (
@@ -121,100 +126,14 @@ class Topic extends React.PureComponent {
             )}
           />
         ) : null}
-        <Modal
-          visible={visibleModal}
-          onRequestClose={() => {}}
-          animationType="slide"
-          transparent={true}
-        >
-          <View
-            style={{
-              justifyContent: 'center',
-              alignItems: 'center',
-              flex: 1,
-              backgroundColor: '#69696969'
-            }}
-          >
-            <View
-              style={{
-                maxHeight: 3 * Constants.screen.height / 4,
-                backgroundColor: 'white'
-              }}
-            >
-              <KeyboardAvoidingView behavior="position">
-                <View
-                  style={{
-                    width: Constants.screen.width * 3 / 4,
-                    height: 300,
-                    borderRadius: 5
-                  }}
-                >
-                  <CardItem style={{ backgroundColor: 'red' }} header>
-                    <Text
-                      style={{
-                        fontSize: 24,
-                        fontWeight: 'bold',
-                        color: 'white'
-                      }}
-                    >
-                      Thêm chủ đề
-                    </Text>
-                  </CardItem>
-                  <View style={{ flex: 2.5, padding: 16 }}>
-                    <Text
-                      style={{
-                        marginRight: 10,
-                        fontSize: 20,
-                        marginBottom: 20
-                      }}
-                    >
-                      Tên chủ đề:{' '}
-                    </Text>
-                    <TextInput
-                      style={{ width: 300, fontSize: 20 }}
-                      placeholder="Nhập tên chủ đề"
-                      underlineColorAndroid="transparent"
-                      onChangeText={text => this.setState({ newTopic: text })}
-                    />
-                    <View
-                      style={{
-                        borderBottomColor: 'black',
-                        opacity: 0.2,
-                        borderBottomWidth: 1,
-                        padding: 5
-                      }}
-                    />
-                  </View>
-                  <View style={{ flexDirection: 'row', flex: 1 }}>
-                    <TouchableOpacity
-                      onPress={() => this.closeModal()}
-                      style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: '#3e82ff'
-                      }}
-                    >
-                      <Text style={{ fontSize: 20, color: 'white' }}>Hủy</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => this.createTopic()}
-                      style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: '#3e82ff'
-                      }}
-                    >
-                      <Text style={{ fontSize: 20, color: 'white' }}>Lưu</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </KeyboardAvoidingView>
-            </View>
-          </View>
-        </Modal>
-        {/* <Fab openModal={this.openModal.bind(this)} /> */}
+        <NewWordDialog
+          visible={this.state.visibleModal}
+          title="Thêm chủ đề"
+          caption="Tên chủ đề:"
+          rightText="Lưu"
+          onPressRight={this.createTopic}
+          onChangeText={text => this.setState({ newTopic: text })}
+        />
         <ActionButton
           buttonColor="red"
           buttonText="+"
