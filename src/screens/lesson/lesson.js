@@ -10,7 +10,7 @@ import {
 import { TabNavigator } from 'react-navigation'
 import { Card, CardItem } from 'native-base'
 import moment from 'moment'
-import { Ionicons } from '@expo/vector-icons'
+import { Ionicons, Entypo } from '@expo/vector-icons'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { Notifications } from 'expo'
@@ -41,16 +41,28 @@ const actions = [
 
 // action chỉ để Học còn Sửa để góc trên bên phải ngang với title
 class Lesson extends React.PureComponent {
-  static navigationOptions = {
-    title: 'Bài học',
-    headerTitle: 'BÀI HỌC HÔM NAY',
-    headerStyle: {
-      backgroundColor: 'red'
-    },
-    headerTintColor: '#fff',
-    headerTitleStyle: {
-      fontSize: 24,
-      fontWeight: 'bold'
+  static navigationOptions = ({ navigation }) => {
+    const params = navigation.state.params || {}
+    return {
+      title: 'Bài học',
+      headerTitle: 'BÀI HỌC HÔM NAY',
+      headerRight: (
+        <Entypo
+          name="edit"
+          color="white"
+          size={30}
+          style={{ padding: 10 }}
+          onPress={params.onPressEdit}
+        />
+      ),
+      headerStyle: {
+        backgroundColor: 'red'
+      },
+      headerTintColor: '#fff',
+      headerTitleStyle: {
+        fontSize: 24,
+        fontWeight: 'bold'
+      }
     }
   }
 
@@ -79,6 +91,15 @@ class Lesson extends React.PureComponent {
           this.loadData()
         }
       )
+    })
+    this.props.navigation.setParams({ onPressEdit: this.onPressEdit })
+  }
+
+  onPressEdit = () => {
+    this.props.navigation.navigate('LessonEdit', {
+      data: this.state.data,
+      counter: this.state.wordCount,
+      loadData: this.loadData.bind(this)
     })
   }
 
