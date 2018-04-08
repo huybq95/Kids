@@ -373,7 +373,7 @@ class TopicDetails extends React.PureComponent {
         <NewWordDialog
           visible={visibleModal}
           title={isEditing ? 'Sửa từ' : 'Thêm từ mới'}
-          caption="Từ mới:"
+          caption="Từ:"
           rightText="Lưu"
           onPressRight={isEditing ? this.updateWord : this.createNewWord}
           onChangeText={text => this.setState({ newWord: text })}

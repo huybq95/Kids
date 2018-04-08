@@ -12,12 +12,30 @@ import {
 import { Card, CardItem } from 'native-base'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { connect } from 'react-redux'
-
 import * as db from '../../db/db'
 
 class LessonEdit extends React.PureComponent {
-  static navigationOptions = {
-    header: null
+  static navigationOptions = ({ navigation }) => {
+    const params = navigation.state.params || {}
+    return {
+      headerTitle: params.title,
+      headerRight: (
+        <Text
+          style={{
+            fontWeight: 'bold',
+            fontSize: 20,
+            paddingHorizontal: 20,
+            color: 'white'
+          }}
+        >
+          Lưu
+        </Text>
+      ),
+      headerStyle: {
+        backgroundColor: 'red'
+      },
+      headerTintColor: '#fff'
+    }
   }
 
   constructor(props) {
@@ -31,7 +49,17 @@ class LessonEdit extends React.PureComponent {
     }
   }
 
+  onClickSave = () => {
+    this.props.navigation.goBack()
+    this.props.navigation.state.params.loadData()
+  }
+
   componentWillMount() {
+    this.props.navigation.setParams({
+      title: 'Số từ: ' + this.state.counter + '/' + this.state.wordCount,
+      onClickSave: this.onClickSave
+    })
+
     db.getSetting().then(data => {
       this.setState({
         textColor: data.textColor,
@@ -94,7 +122,7 @@ class LessonEdit extends React.PureComponent {
     let { data, counter, max, wordCount } = this.state
     return (
       <View style={styles.container}>
-        <View
+        {/* <View
           style={{
             height: Platform.OS === 'ios' ? 76 : 56,
             backgroundColor: 'red',
@@ -120,7 +148,7 @@ class LessonEdit extends React.PureComponent {
           >
             <Text style={{ fontSize: 24, color: 'white' }}>Lưu</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
         {
           <FlatList
             keyExtractor={(item, index) => index}
@@ -204,8 +232,7 @@ export default connect(mapStateToProps)(LessonEdit)
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: 'white'
+    flex: 1
   },
   word: {
     width: (Dimensions.get('window').width - 32) / 3,

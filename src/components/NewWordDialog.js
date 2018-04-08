@@ -174,7 +174,7 @@ export default class NewWordDialog extends Component {
                       flex: 1,
                       justifyContent: 'center',
                       alignItems: 'center',
-                      backgroundColor: '#3e82ff',
+                      backgroundColor: 'red',
                       paddingVertical: 10
                     }}
                   >
@@ -187,7 +187,7 @@ export default class NewWordDialog extends Component {
                       flex: 1,
                       justifyContent: 'center',
                       alignItems: 'center',
-                      backgroundColor: '#3e82ff',
+                      backgroundColor: 'red',
                       paddingVertical: 10
                     }}
                   >

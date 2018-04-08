@@ -51,7 +51,7 @@ class Lesson extends React.PureComponent {
           name="edit"
           color="white"
           size={30}
-          style={{ padding: 10 }}
+          style={{ paddingHorizontal: 20 }}
           onPress={params.onPressEdit}
         />
       ),
