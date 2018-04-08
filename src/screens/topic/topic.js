@@ -10,7 +10,8 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   TextInput,
-  Modal
+  Modal,
+  ActivityIndicator
 } from 'react-native'
 import { Card, CardItem, Body } from 'native-base'
 import Toast, { DURATION } from 'react-native-easy-toast'
@@ -47,14 +48,15 @@ class Topic extends React.PureComponent {
       // isUpperCase: this.props.settings.isUpperCase || false,
       listTopic: [],
       newTopic: '',
-      visibleModal: false
+      visibleModal: false,
+      loading: false
     }
-    this.loadData()
   }
 
-  // componentWillMount() {
-
-  // }
+  componentWillMount() {
+    this.setState({ loading: true })
+    this.loadData()
+  }
 
   // componentDidMount() {
   //   this.setState({
@@ -73,6 +75,7 @@ class Topic extends React.PureComponent {
   loadData() {
     db.getAllTopic().then(data => {
       this.setState({ listTopic: data })
+      this.setState({ loading: false })
     })
     // db.getSetting().then(data => {
     //   this.setState({
@@ -111,21 +114,25 @@ class Topic extends React.PureComponent {
     let { listTopic, visibleModal } = this.state
     return (
       <View style={styles.container}>
-        {listTopic.length > 0 ? (
-          <FlatList
-            keyExtractor={(item, index) => index}
-            data={listTopic}
-            extraData={this.state}
-            renderItem={({ item }) => (
-              <TopicItem
-                loadData={this.loadData.bind(this)}
-                navigation={this.props.navigation}
-                key={item._id}
-                data={item}
-              />
-            )}
-          />
-        ) : null}
+        {this.state.loading ? (
+          <ActivityIndicator />
+        ) : (
+          listTopic.length > 0 && (
+            <FlatList
+              keyExtractor={(item, index) => index}
+              data={listTopic}
+              extraData={this.state}
+              renderItem={({ item }) => (
+                <TopicItem
+                  loadData={this.loadData.bind(this)}
+                  navigation={this.props.navigation}
+                  key={item._id}
+                  data={item}
+                />
+              )}
+            />
+          )
+        )}
         <NewWordDialog
           visible={this.state.visibleModal}
           title="Thêm chủ đề"
@@ -165,7 +172,9 @@ export default connect()(Topic)
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   topicItem: {},
   wordItem: {

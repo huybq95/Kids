@@ -115,6 +115,7 @@ class TopicDetails extends React.PureComponent {
     db
       .getWordsOfTopic(this.state.topicTitle)
       .then(topic => {
+        console.log('load data ', topic)
         this.setState({ words: topic })
       })
       .catch(err => {})

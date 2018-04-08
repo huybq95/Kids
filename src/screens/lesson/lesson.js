@@ -1,5 +1,12 @@
 import React from 'react'
-import { Text, View, StyleSheet, Dimensions } from 'react-native'
+import {
+  Text,
+  View,
+  StyleSheet,
+  Dimensions,
+  ActivityIndicator,
+  Modal
+} from 'react-native'
 import { TabNavigator } from 'react-navigation'
 import { Card, CardItem } from 'native-base'
 import moment from 'moment'
@@ -53,11 +60,14 @@ class Lesson extends React.PureComponent {
       data: [],
       textColor: this.props.settings.textColor || 'red',
       isUpperCase: this.props.settings.isUpperCase || false,
-      wordCount: this.props.settings.wordCount || '5'
+      wordCount: this.props.settings.wordCount || '5',
+      loading: false,
+      loadingDialog: false
     }
   }
 
   componentWillMount() {
+    this.setState({ loading: true })
     db.getSetting().then(data => {
       this.setState(
         {
@@ -101,10 +111,10 @@ class Lesson extends React.PureComponent {
     })
   }
 
-  loadData() {
-    db.getTodayLesson(parseInt(this.state.wordCount)).then(data => {
-      this.setState({ data: data })
-    })
+  async loadData() {
+    let data = await db.getTodayLesson(parseInt(this.state.wordCount)) //.then(data => {
+    this.setState({ data: data, loading: false })
+    //})
   }
 
   componentWillReceiveProps(nextProps) {
@@ -122,56 +132,62 @@ class Lesson extends React.PureComponent {
     }
   }
 
-  onPressItem = name => {
+  onPressItem = async name => {
+    this.setState({ loadingDialog: true })
+    await this.loadData()
     db.resetStateIsLearning(this.state.data)
+    this.setState({ loadingDialog: false })
     this.props.navigation.navigate('LessonDetails', {
       data: this.state.data
     })
-    // case 'bt_edit':
-    //   this.props.navigation.navigate('LessonEdit', {
-    //     data: this.state.data,
-    //     counter: this.state.wordCount,
-    //     loadData: this.loadData.bind(this)
-    //   })
-    //   break
   }
 
   render() {
     let { data, wordCount } = this.state
     return (
       <View style={styles.container}>
-        <Card style={{}}>
+        <Card style={{ flex: 1 }}>
           <CardItem header>
             <Text style={{ fontSize: 32, color: 'black' }}>{`${moment(
               new Date().getTime()
             ).format('DD/MM/YYYY')}`}</Text>
           </CardItem>
           <View style={{ borderBottomColor: 'red', borderBottomWidth: 1 }} />
-          <CardItem>
-            <FlatList
-              style={{ marginBottom: 56 }}
-              extraData={this.state}
-              data={data}
-              keyExtractor={(item, index) => index}
-              renderItem={({ item }) => (
-                <Text
-                  numberOfLines={2}
-                  ellipsizeMode="tail"
-                  style={{
-                    color: this.state.textColor,
-                    width: WIDTH,
-                    height: HEIGHT,
-                    textAlign: 'left',
-                    fontSize: 24,
-                    paddingVertical: 16
-                  }}
-                >
-                  {this.state.isUpperCase
-                    ? `${item.text}`.toUpperCase()
-                    : `${item.text}`}
-                </Text>
-              )}
-            />
+          <CardItem
+            style={{
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            {this.state.loading ? (
+              <ActivityIndicator />
+            ) : (
+              <FlatList
+                style={{ marginBottom: 56 }}
+                extraData={this.state}
+                data={data}
+                keyExtractor={(item, index) => index}
+                renderItem={({ item }) => (
+                  <Text
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
+                    style={{
+                      color: this.state.textColor,
+                      width: WIDTH,
+                      height: HEIGHT,
+                      textAlign: 'left',
+                      fontSize: 24,
+                      paddingVertical: 16
+                    }}
+                  >
+                    {this.state.isUpperCase
+                      ? `${item.text}`.toUpperCase()
+                      : `${item.text}`}
+                  </Text>
+                )}
+              />
+            )}
           </CardItem>
           <ActionButton
             buttonColor="red"
@@ -181,6 +197,21 @@ class Lesson extends React.PureComponent {
             )}
             onPress={this.onPressItem}
           />
+          <Modal
+            visible={this.state.loadingDialog}
+            transparent={true}
+            onRequestClose={() => {}}
+          >
+            <View
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <ActivityIndicator />
+            </View>
+          </Modal>
         </Card>
       </View>
     )

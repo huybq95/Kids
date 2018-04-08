@@ -653,13 +653,23 @@ export function createTopic(title) {
 
 export function updateWord(word) {
   return new Promise((resolve, reject) => {
-    db.update({ _id: word._id }, { $set: { text: word.text } }, (err, res) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(res)
+    db.update(
+      { _id: word._id },
+      {
+        $set: {
+          text: word.text,
+          recordingPath: word.recordingPath,
+          recordingDuration: word.recordingDuration
+        }
+      },
+      (err, res) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(res)
+        }
       }
-    })
+    )
   })
 }
 
