@@ -16,11 +16,12 @@ import { Card, CardItem } from 'native-base'
 import Fab from '../../components/fab'
 import Modal from 'react-native-modal'
 import { Ionicons } from '@expo/vector-icons'
-import { Speech } from 'expo'
+import { Speech, Permissions, Asset, Audio, FileSystem } from 'expo'
 import Toast, { DURATION } from 'react-native-easy-toast'
 import { connect } from 'react-redux'
-
+import ActionButton from 'react-native-action-button'
 import * as db from '../../db/db'
+import NewWordDialog from '../../components/NewWordDialog'
 
 const widthItem = Dimensions.get('window').width / 3
 
@@ -65,8 +66,18 @@ class TopicDetails extends React.PureComponent {
       isEditing: false,
       selectItem: {},
       textColor: this.props.settings.textColor || 'black',
-      isUpperCase: this.props.settings.isUpperCase || 'black'
+      isUpperCase: this.props.settings.isUpperCase || 'black',
+
+      isLoading: false,
+      recordingDuration: null,
+      isRecording: false,
+      haveRecordingPermissions: false,
+      recordPath: null
     }
+    this.recordingSettings = JSON.parse(
+      JSON.stringify(Audio.RECORDING_OPTIONS_PRESET_LOW_QUALITY)
+    )
+    this.sound = null
   }
 
   componentWillMount() {
@@ -95,9 +106,9 @@ class TopicDetails extends React.PureComponent {
     }
   }
 
-  speech(text) {
+  speech = () => {
     Speech.stop()
-    Speech.speak(text, { language: 'vi-VN' })
+    Speech.speak(this.state.newWord, { language: 'vi-VN' })
   }
 
   loadData() {
@@ -109,24 +120,39 @@ class TopicDetails extends React.PureComponent {
       .catch(err => {})
   }
 
-  openModal(isEditing = false) {
+  openModal = (isEditing = false) => {
     if (isEditing) {
       this.setState({ newWord: this.state.selectItem.text })
+    } else {
+      this.setState({ newWord: undefined })
     }
     this.setState({ visibleModal: true, isEditing: isEditing })
   }
 
-  closeModal() {
-    this.setState({ visibleModal: false })
+  closeModal = () => {
+    this.setState({
+      visibleModal: false,
+      recordingPath: null,
+      recordingDuration: null
+    })
   }
 
-  showWordDetails(item) {
+  async showWordDetails(item) {
+    if (item.recordingDuration && item.recordingPath) {
+      this.sound = new Audio.Sound()
+      this.setState({ recordingDuration: item.recordingDuration })
+      try {
+        await this.sound.loadAsync({ uri: item.recordingPath })
+      } catch (e) {
+        Alert.alert('ERROR Loading Audio', e.message)
+      }
+    }
     this.setState({ selectItem: item }, () => {
       this.openModal(true)
     })
   }
 
-  createNewWord() {
+  createNewWord = () => {
     let newWord = {
       type: 'word',
       topic: this.state.topicTitle,
@@ -134,7 +160,9 @@ class TopicDetails extends React.PureComponent {
       text: this.state.newWord,
       isCompleted: false,
       isLearning: false,
-      updated: new Date().getTime()
+      updated: new Date().getTime(),
+      recordingPath: this.state.recordingPath,
+      recordingDuration: this.state.recordingDuration
     }
     // console.log('newWord', newWord)
     db
@@ -144,28 +172,31 @@ class TopicDetails extends React.PureComponent {
         this.loadData()
       })
       .catch(err => {
-        this.showToast('Cant add new word !')
+        this.refs.toast.show('Cant add new word !')
       })
   }
 
-  updateWord() {
+  updateWord = () => {
     let word = this.state.selectItem
     word.text = this.state.newWord
+    word.recordingPath = this.state.recordingPath
+    word.recordingDuration = this.state.recordingDuration
     db
       .updateWord(word)
       .then(() => {
         this.closeModal()
-        this.showToast('Updated !', DURATION.LENGTH_SHORT)
+        this.refs.toast.show('Updated !', DURATION.LENGTH_SHORT)
         this.loadData()
+        this.setState({ recordingPath: null, recordingDuration: null })
       })
       .catch(() => {
-        this.showToast('Cant update new word !')
+        this.refs.toast.show('Cant update new word !')
       })
   }
 
-  removeWord(word) {
+  removeWord = () => {
     db
-      .removeWord(word)
+      .removeWord(this.state.selectItem)
       .then(() => {
         this.closeModal()
         this.loadData()
@@ -173,8 +204,144 @@ class TopicDetails extends React.PureComponent {
       .catch(err => {})
   }
 
+  async _stopPlaybackAndBeginRecording() {
+    this.setState({
+      isLoading: true
+    })
+    if (this.sound !== null) {
+      await this.sound.unloadAsync()
+      this.sound.setOnPlaybackStatusUpdate(null)
+      this.sound = null
+    }
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: true,
+      interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
+      playsInSilentModeIOS: true,
+      shouldDuckAndroid: true,
+      interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX
+    })
+    if (this.recording) {
+      this.recording.setOnRecordingStatusUpdate(null)
+      this.recording = null
+    }
+
+    const recording = new Audio.Recording()
+    await recording.prepareToRecordAsync(this.recordingSettings)
+    recording.setOnRecordingStatusUpdate(this._updateScreenForRecordingStatus)
+
+    this.recording = recording
+    await this.recording.startAsync() // Will call this._updateScreenForRecordingStatus to update the screen.
+    this.setState({
+      isLoading: false
+    })
+  }
+
+  async _stopRecordingAndEnablePlayback() {
+    this.setState({
+      isLoading: true
+    })
+    try {
+      await this.recording.stopAndUnloadAsync()
+    } catch (error) {
+      // Do nothing -- we are already unloaded.
+    }
+    const info = await FileSystem.getInfoAsync(this.recording.getURI())
+    console.log(`FILE INFO: ${JSON.stringify(info)}`)
+    this.setState({ recordingPath: this.recording.getURI() })
+
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
+      playsInSilentModeIOS: true,
+      playsInSilentLockedModeIOS: true,
+      shouldDuckAndroid: true,
+      interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX
+    })
+    const { sound, status } = await this.recording.createNewLoadedSound(
+      {
+        // isLooping: true,
+        isMuted: this.state.muted,
+        volume: this.state.volume,
+        rate: this.state.rate,
+        shouldCorrectPitch: this.state.shouldCorrectPitch
+      },
+      this._updateScreenForSoundStatus
+    )
+    this.sound = sound
+    this.setState({
+      isLoading: false
+    })
+  }
+
+  _updateScreenForRecordingStatus = status => {
+    if (status.canRecord) {
+      this.setState({
+        isRecording: status.isRecording,
+        recordingDuration: status.durationMillis
+      })
+    } else if (status.isDoneRecording) {
+      this.setState({
+        isRecording: false,
+        recordingDuration: status.durationMillis
+      })
+      if (!this.state.isLoading) {
+        this._stopRecordingAndEnablePlayback()
+      }
+    }
+  }
+
+  _getRecordingTimestamp() {
+    if (this.state.recordingDuration != null) {
+      return `${this._getMMSSFromMillis(this.state.recordingDuration)}`
+    }
+    return `${this._getMMSSFromMillis(0)}`
+  }
+
+  _getMMSSFromMillis(millis) {
+    const totalSeconds = millis / 1000
+    const seconds = Math.floor(totalSeconds % 60)
+    const minutes = Math.floor(totalSeconds / 60)
+
+    const padWithZero = number => {
+      const string = number.toString()
+      if (number < 10) {
+        return '0' + string
+      }
+      return string
+    }
+    return padWithZero(minutes) + ':' + padWithZero(seconds)
+  }
+
+  onPressRecord = () => {
+    if (!this.state.haveRecordingPermissions) {
+      this._askForPermissions()
+    }
+    if (this.state.isRecording) {
+      this._stopRecordingAndEnablePlayback()
+    } else {
+      this._stopPlaybackAndBeginRecording()
+    }
+  }
+
+  _onPlayPausePressed = () => {
+    if (this.sound != null) {
+      if (this.state.isPlaying) {
+        this.sound.pauseAsync()
+      } else {
+        this.sound.playAsync()
+      }
+    }
+  }
+
+  _askForPermissions = async () => {
+    const response = await Permissions.askAsync(Permissions.AUDIO_RECORDING)
+    this.setState({
+      haveRecordingPermissions: response.status === 'granted'
+    })
+  }
+
   render() {
-    let { words, visibleModal, isEditing, newWord } = this.state
+    let { words, visibleModal, isEditing, newWord, isRecording } = this.state
     return (
       <View style={styles.container}>
         <FlatList
@@ -197,190 +364,29 @@ class TopicDetails extends React.PureComponent {
             </TouchableOpacity>
           )}
         />
-        <Fab openModal={this.openModal.bind(this)} />
-        <Modal
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-          onBackButtonPress={() => this.closeModal()}
-          onBackdropPress={() => this.closeModal()}
+        <ActionButton
+          buttonColor="red"
+          buttonText="+"
+          onPress={this.openModal}
+        />
+        <NewWordDialog
           visible={visibleModal}
-        >
-          {!isEditing ? (
-            <KeyboardAvoidingView behavior="position">
-              <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-                <View style={styles.modal}>
-                  <Card>
-                    <CardItem style={{ backgroundColor: 'red' }} header>
-                      <Text
-                        style={{
-                          fontSize: 24,
-                          fontWeight: 'bold',
-                          color: 'white'
-                        }}
-                      >
-                        Thêm từ
-                      </Text>
-                    </CardItem>
-                    <View style={{ flex: 2.5, padding: 16 }}>
-                      <Text style={{ marginRight: 10, fontSize: 20 }}>
-                        Từ mới:{' '}
-                      </Text>
-                      <TextInput
-                        style={{
-                          width: 300,
-                          height: 30,
-                          marginTop: 20,
-                          fontSize: 20
-                        }}
-                        placeholder="Nhập từ mới"
-                        underlineColorAndroid="transparent"
-                        onChangeText={text => this.setState({ newWord: text })}
-                      />
-                      <View
-                        style={{
-                          borderBottomColor: 'black',
-                          opacity: 0.2,
-                          borderBottomWidth: 1,
-                          padding: 5
-                        }}
-                      />
-                      <TouchableOpacity
-                        onPress={() => this.speech(newWord)}
-                        style={{ flexDirection: 'row', alignItems: 'center' }}
-                      >
-                        <Ionicons
-                          style={{ paddingHorizontal: 10 }}
-                          name="ios-play"
-                          color="red"
-                          size={48}
-                        />
-                        <Text style={{ fontSize: 20 }}>Nghe</Text>
-                      </TouchableOpacity>
-                    </View>
-                    <View style={{ flexDirection: 'row', flex: 1 }}>
-                      <TouchableOpacity
-                        onPress={() => this.closeModal()}
-                        style={{
-                          flex: 1,
-                          justifyContent: 'center',
-                          alignItems: 'center'
-                        }}
-                      >
-                        <Text>Hủy</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => this.createNewWord()}
-                        style={{
-                          flex: 1,
-                          justifyContent: 'center',
-                          alignItems: 'center'
-                        }}
-                      >
-                        <Text>Lưu</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </Card>
-                </View>
-              </TouchableWithoutFeedback>
-            </KeyboardAvoidingView>
-          ) : (
-            <KeyboardAvoidingView behavior="position">
-              <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-                <View style={styles.modal}>
-                  <Card>
-                    <CardItem style={{ backgroundColor: 'red' }} header>
-                      <Text
-                        style={{
-                          fontSize: 24,
-                          fontWeight: 'bold',
-                          color: 'white'
-                        }}
-                      >
-                        Sửa từ
-                      </Text>
-                    </CardItem>
-                    <View style={{ flex: 2.5, padding: 16 }}>
-                      <Text style={{ marginRight: 10, fontSize: 20 }}>
-                        Từ :{' '}
-                      </Text>
-                      <TextInput
-                        ref="edit"
-                        style={{
-                          width: 300,
-                          height: 30,
-                          marginTop: 20,
-                          fontSize: 20
-                        }}
-                        placeholder="Nhập từ mới"
-                        value={newWord}
-                        underlineColorAndroid="transparent"
-                        onFocus={() => {
-                          this.refs.edit.clear()
-                        }}
-                        onChangeText={text => this.setState({ newWord: text })}
-                      />
-                      <View
-                        style={{
-                          borderBottomColor: 'black',
-                          opacity: 0.2,
-                          borderBottomWidth: 1,
-                          padding: 5
-                        }}
-                      />
-                      <View style={{ flexDirection: 'row', flex: 1 }}>
-                        <TouchableOpacity
-                          onPress={() => this.speech(newWord)}
-                          style={{ flexDirection: 'row', alignItems: 'center' }}
-                        >
-                          <Ionicons
-                            style={{ paddingHorizontal: 10 }}
-                            name="ios-play"
-                            color="red"
-                            size={48}
-                          />
-                          <Text style={{ fontSize: 20 }}>Nghe</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          onPress={() => this.removeWord(this.state.selectItem)}
-                          style={{ flexDirection: 'row', alignItems: 'center' }}
-                        >
-                          <Ionicons
-                            style={{ paddingHorizontal: 10 }}
-                            name="ios-trash"
-                            color="red"
-                            size={48}
-                          />
-                          <Text style={{ fontSize: 20 }}>Xóa</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                    <View style={{ flexDirection: 'row', flex: 1 }}>
-                      <TouchableOpacity
-                        onPress={() => this.closeModal()}
-                        style={{
-                          flex: 1,
-                          justifyContent: 'center',
-                          alignItems: 'center'
-                        }}
-                      >
-                        <Text>Hủy</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => this.createNewWord()}
-                        style={{
-                          flex: 1,
-                          justifyContent: 'center',
-                          alignItems: 'center'
-                        }}
-                      >
-                        <Text>Lưu</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </Card>
-                </View>
-              </TouchableWithoutFeedback>
-            </KeyboardAvoidingView>
-          )}
-        </Modal>
+          title={isEditing ? 'Sửa từ' : 'Thêm từ mới'}
+          caption="Từ mới:"
+          rightText="Lưu"
+          onPressRight={isEditing ? this.updateWord : this.createNewWord}
+          onChangeText={text => this.setState({ newWord: text })}
+          onPressLeft={this.closeModal}
+          isEditing={isEditing}
+          speech={this.speech}
+          removeWord={this.removeWord}
+          value={newWord}
+          onPressRecord={this.onPressRecord}
+          duration={this._getRecordingTimestamp()}
+          onPressPlayRecord={this._onPlayPausePressed}
+          isRecording={isRecording}
+        />
+        <Toast ref="toast" />
       </View>
     )
   }

@@ -9,6 +9,7 @@ import {
 } from 'react-native'
 import { CardItem } from 'native-base'
 import Constants from '../constants/Constants'
+import { Ionicons } from '@expo/vector-icons'
 
 export default class NewWordDialog extends Component {
   render() {
@@ -18,7 +19,16 @@ export default class NewWordDialog extends Component {
       caption,
       rightText,
       onPressRight,
-      onChangeText
+      onPressLeft,
+      onChangeText,
+      isEditing,
+      value,
+      speech,
+      removeWord,
+      duration,
+      onPressRecord,
+      onPressPlayRecord,
+      isRecording
     } = this.props
     return (
       <Modal
@@ -37,15 +47,13 @@ export default class NewWordDialog extends Component {
         >
           <View
             style={{
-              maxHeight: 3 * Constants.screen.height / 4,
               backgroundColor: 'white'
             }}
           >
             <KeyboardAvoidingView behavior="position">
               <View
                 style={{
-                  width: Constants.screen.width * 3 / 4,
-                  height: 300,
+                  width: Constants.screen.width * 5 / 6,
                   borderRadius: 5
                 }}
               >
@@ -60,7 +68,7 @@ export default class NewWordDialog extends Component {
                     {title}
                   </Text>
                 </CardItem>
-                <View style={{ flex: 2.5, padding: 16 }}>
+                <View style={{ padding: 16 }}>
                   <Text
                     style={{
                       marginRight: 10,
@@ -75,6 +83,7 @@ export default class NewWordDialog extends Component {
                     placeholder={'Nhập ' + caption.toLowerCase()}
                     underlineColorAndroid="transparent"
                     onChangeText={onChangeText}
+                    value={value}
                   />
                   <View
                     style={{
@@ -85,25 +94,101 @@ export default class NewWordDialog extends Component {
                     }}
                   />
                 </View>
-                <View style={{ flexDirection: 'row', flex: 1 }}>
+                {isEditing !== undefined && (
+                  <View>
+                    <View
+                      style={{
+                        flexDirection: 'row'
+                      }}
+                    >
+                      <TouchableOpacity
+                        onPress={speech}
+                        disabled={isRecording}
+                        style={{ flexDirection: 'row', alignItems: 'center' }}
+                      >
+                        <Ionicons
+                          style={{ padding: 20 }}
+                          name="ios-play"
+                          color={isRecording ? '#ffbfbf' : 'red'}
+                          size={38}
+                        />
+                        <Text>Nghe phát âm</Text>
+                      </TouchableOpacity>
+                      {isEditing && (
+                        <TouchableOpacity
+                          onPress={removeWord}
+                          style={{ flexDirection: 'row', alignItems: 'center' }}
+                        >
+                          <Ionicons
+                            style={{ padding: 20 }}
+                            name="ios-trash"
+                            color={isRecording ? '#ffbfbf' : 'red'}
+                            size={38}
+                          />
+                          <Text>Xóa</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: 'row'
+                      }}
+                    >
+                      <TouchableOpacity
+                        onPress={onPressPlayRecord}
+                        disabled={isRecording}
+                        style={{ flexDirection: 'row', alignItems: 'center' }}
+                      >
+                        <Ionicons
+                          style={{ padding: 20 }}
+                          name="ios-play"
+                          color={isRecording ? '#ffbfbf' : 'red'}
+                          size={38}
+                        />
+                        <Text>Nghe thu âm</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={{ flexDirection: 'row', alignItems: 'center' }}
+                        onPress={onPressRecord}
+                      >
+                        <Ionicons
+                          style={{ padding: 20 }}
+                          name={isRecording ? 'md-square' : 'ios-mic'}
+                          color="red"
+                          size={38}
+                        />
+                        <Text>Thu âm</Text>
+                        <Text style={{ paddingHorizontal: 10 }}>
+                          {duration}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+
+                <View style={{ flexDirection: 'row' }}>
                   <TouchableOpacity
-                    onPress={() => this.closeModal()}
+                    disabled={isRecording}
+                    onPress={() => onPressLeft && onPressLeft()}
                     style={{
                       flex: 1,
                       justifyContent: 'center',
                       alignItems: 'center',
-                      backgroundColor: '#3e82ff'
+                      backgroundColor: '#3e82ff',
+                      paddingVertical: 10
                     }}
                   >
                     <Text style={{ fontSize: 20, color: 'white' }}>Hủy</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
+                    disabled={isRecording}
                     onPress={() => onPressRight && onPressRight()}
                     style={{
                       flex: 1,
                       justifyContent: 'center',
                       alignItems: 'center',
-                      backgroundColor: '#3e82ff'
+                      backgroundColor: '#3e82ff',
+                      paddingVertical: 10
                     }}
                   >
                     <Text style={{ fontSize: 20, color: 'white' }}>

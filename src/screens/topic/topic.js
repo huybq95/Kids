@@ -86,7 +86,7 @@ class Topic extends React.PureComponent {
     this.setState({ visibleModal: true })
   }
 
-  closeModal() {
+  closeModal = () => {
     this.setState({ visibleModal: false })
   }
 
@@ -133,6 +133,7 @@ class Topic extends React.PureComponent {
           rightText="Lưu"
           onPressRight={this.createTopic}
           onChangeText={text => this.setState({ newTopic: text })}
+          onPressLeft={this.closeModal}
         />
         <ActionButton
           buttonColor="red"
