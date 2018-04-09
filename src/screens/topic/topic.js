@@ -119,7 +119,7 @@ class Topic extends React.PureComponent {
         ) : (
           listTopic.length > 0 && (
             <FlatList
-              keyExtractor={(item, index) => index}
+              keyExtractor={(item, index) => index.toString()}
               data={listTopic}
               extraData={this.state}
               renderItem={({ item }) => (

@@ -70,7 +70,7 @@ class Lesson extends React.PureComponent {
     super(props)
     this.state = {
       data: [],
-      textColor: this.props.settings.textColor || 'red',
+      textColor: this.props.settings ? this.props.settings.textColor : 'red',
       isUpperCase: this.props.settings.isUpperCase || false,
       wordCount: this.props.settings.wordCount || '5',
       loading: false,
@@ -157,10 +157,10 @@ class Lesson extends React.PureComponent {
     this.setState({ loadingDialog: true })
     await this.loadData()
     db.resetStateIsLearning(this.state.data)
+    let data = null //this.state.data.slice()
+    data.sort(() => Math.random() - 0.5)
+    this.props.navigation.navigate('LessonDetails', { data })
     this.setState({ loadingDialog: false })
-    this.props.navigation.navigate('LessonDetails', {
-      data: this.state.data
-    })
   }
 
   render() {
@@ -188,8 +188,8 @@ class Lesson extends React.PureComponent {
                 style={{ marginBottom: 56 }}
                 extraData={this.state}
                 data={data}
-                keyExtractor={(item, index) => index}
-                renderItem={({ item }) => (
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item, index }) => (
                   <Text
                     numberOfLines={2}
                     ellipsizeMode="tail"

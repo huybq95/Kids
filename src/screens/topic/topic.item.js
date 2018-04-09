@@ -110,7 +110,7 @@ export class TopicItem extends React.PureComponent {
             </TouchableOpacity>
           </View>
           <FlatList
-            keyExtractor={(item, index) => index}
+            keyExtractor={(item, index) => index.toString()}
             extraData={this.state}
             horizontal={true}
             data={data.words}

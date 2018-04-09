@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
-    "jest-expo": "25.0.0",
+    "jest-expo": "^26.0.0",
     "react-native-scripts": "1.11.1",
     "react-test-renderer": "16.2.0"
   },
@@ -19,20 +19,19 @@
     "preset": "jest-expo"
   },
   "dependencies": {
-    "exp": "^49.2.2",
-    "expo": "^25.0.0",
+    "expo": "^26.0.0",
     "moment": "^2.20.1",
     "native-base": "^2.3.9",
-    "react": "16.2.0",
+    "react": "16.3.0-alpha.1",
     "react-native":
-      "https://github.com/expo/react-native/archive/sdk-25.0.0.tar.gz",
+      "https://github.com/expo/react-native/archive/sdk-26.0.0.tar.gz",
     "react-native-action-button": "^2.8.4",
     "react-native-easy-toast": "^1.0.9",
     "react-native-floating-action": "^1.10.1",
     "react-native-local-mongodb": "^1.9.1",
     "react-native-modal": "^5.0.1",
     "react-native-modal-dropdown": "^0.6.1",
-    "react-navigation": "^1.1.2",
+    "react-navigation": "1.5.8",
     "react-redux": "^5.0.7",
     "redux": "^3.7.2",
     "redux-persist": "^5.9.1",

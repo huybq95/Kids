@@ -151,7 +151,7 @@ class LessonEdit extends React.PureComponent {
         </View> */}
         {
           <FlatList
-            keyExtractor={(item, index) => index}
+            keyExtractor={(item, index) => index.toString()}
             extraData={this.state}
             data={data}
             renderItem={({ item }) => {
@@ -169,7 +169,7 @@ class LessonEdit extends React.PureComponent {
                   </Text>
                   <View style={{ padding: 16 }}>
                     <FlatList
-                      keyExtractor={(item, index) => index}
+                      keyExtractor={(item, index) => index.toString()}
                       numColumns={3}
                       extraData={this.state}
                       data={item.words}
