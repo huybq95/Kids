@@ -5,5 +5,8 @@ export default {
   screen: {
     width,
     height
+  },
+  StorageKey: {
+    LEARNED: 'STORAGE_KEY_LEARNED'
   }
 }

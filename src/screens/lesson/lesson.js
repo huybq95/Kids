@@ -19,6 +19,7 @@ import Fab from '../../components/fab'
 import * as db from '../../db/db'
 import { FlatList } from 'react-native-gesture-handler'
 import * as settingActions from '../settings/setting.actions'
+import Constants from '../../constants/Constants'
 
 const WIDTH = (Dimensions.get('window').width - 56) / 3
 const HEIGHT = (Dimensions.get('window').height - 300) / 5
@@ -133,13 +134,14 @@ class Lesson extends React.PureComponent {
   }
 
   async loadData() {
-    let data = await db.getTodayLesson(parseInt(this.state.wordCount)) //.then(data => {
+    console.log('get today lesson')
+    let data = await db.getTodayLesson(parseInt(this.state.wordCount))
+    console.log('get today lesson done')
     this.setState({ data: data, loading: false })
-    //})
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps && nextProps.settings) {
+    if (nextProps && nextProps.settings && !this.state.loading) {
       this.setState(
         {
           textColor: nextProps.settings.textColor,
@@ -153,14 +155,16 @@ class Lesson extends React.PureComponent {
     }
   }
 
-  onPressItem = async name => {
-    this.setState({ loadingDialog: true })
-    await this.loadData()
-    db.resetStateIsLearning(this.state.data)
-    let data = null //this.state.data.slice()
-    data.sort(() => Math.random() - 0.5)
-    this.props.navigation.navigate('LessonDetails', { data })
-    this.setState({ loadingDialog: false })
+  onPressLearn = async name => {
+    if (!this.state.loading && !this.state.loadingDialog) {
+      this.setState({ loadingDialog: true })
+      await this.loadData()
+      db.resetStateIsLearning(this.state.data)
+      let data = this.state.data.slice()
+      data.sort(() => Math.random() - 0.5)
+      this.props.navigation.navigate('LessonDetails', { data })
+      this.setState({ loadingDialog: false })
+    }
   }
 
   render() {
@@ -198,8 +202,7 @@ class Lesson extends React.PureComponent {
                       width: WIDTH,
                       height: HEIGHT,
                       textAlign: 'left',
-                      fontSize: 24,
-                      paddingVertical: 16
+                      fontSize: 24
                     }}
                   >
                     {this.state.isUpperCase
@@ -212,11 +215,10 @@ class Lesson extends React.PureComponent {
           </CardItem>
           <ActionButton
             buttonColor="red"
-            // buttonText="Học"
             renderIcon={() => (
               <Ionicons name="ios-play" color="white" size={30} />
             )}
-            onPress={this.onPressItem}
+            onPress={this.onPressLearn}
           />
           <Modal
             visible={this.state.loadingDialog}
@@ -230,7 +232,19 @@ class Lesson extends React.PureComponent {
                 justifyContent: 'center'
               }}
             >
-              <ActivityIndicator />
+              <View
+                style={{
+                  width: Constants.screen.width / 3,
+                  height: 50,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderRadius: 5
+                }}
+              >
+                <ActivityIndicator />
+                <Text>Loading...</Text>
+              </View>
             </View>
           </Modal>
         </Card>

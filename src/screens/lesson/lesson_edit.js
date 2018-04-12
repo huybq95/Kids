@@ -20,16 +20,18 @@ class LessonEdit extends React.PureComponent {
     return {
       headerTitle: params.title,
       headerRight: (
-        <Text
-          style={{
-            fontWeight: 'bold',
-            fontSize: 20,
-            paddingHorizontal: 20,
-            color: 'white'
-          }}
-        >
-          Lưu
-        </Text>
+        <TouchableOpacity onPress={params.onClickSave}>
+          <Text
+            style={{
+              fontWeight: 'bold',
+              fontSize: 20,
+              paddingHorizontal: 20,
+              color: 'white'
+            }}
+          >
+            Lưu
+          </Text>
+        </TouchableOpacity>
       ),
       headerStyle: {
         backgroundColor: 'red'
@@ -78,7 +80,7 @@ class LessonEdit extends React.PureComponent {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps && nextProps.settings) {
+    if (nextProps.settings !== this.props.settings) {
       this.setState({
         textColor: nextProps.settings.textColor,
         isUpperCase: nextProps.settings.isUpperCase
@@ -154,70 +156,70 @@ class LessonEdit extends React.PureComponent {
             keyExtractor={(item, index) => index.toString()}
             extraData={this.state}
             data={data}
-            renderItem={({ item }) => {
-              return (
-                <View key={item.title} style={{}}>
-                  <Text
-                    style={{
-                      fontSize: 24,
-                      fontWeight: 'bold',
-                      textAlign: 'center',
-                      padding: 10
-                    }}
-                  >
-                    {`${item.title}`}
-                  </Text>
-                  <View style={{ padding: 16 }}>
-                    <FlatList
-                      keyExtractor={(item, index) => index.toString()}
-                      numColumns={3}
-                      extraData={this.state}
-                      data={item.words}
-                      renderItem={({ item }) => {
-                        return (
-                          <TouchableOpacity
-                            onPress={() => this.toggleIsLearningState(item)}
-                            key={item._id}
-                            style={[styles.word]}
-                          >
-                            <Card
-                              style={{
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                backgroundColor: item.isCompleted
-                                  ? '#fcfcfc'
-                                  : 'white'
-                              }}
-                            >
-                              {item.isLearning ? (
-                                <Ionicons
-                                  style={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    right: 10
-                                  }}
-                                  name="ios-checkmark"
-                                  size={32}
-                                  color="red"
-                                />
-                              ) : null}
-                              <Text style={{ color: this.state.textColor }}>{`${
-                                this.state.isUpperCase
-                                  ? item.text.toUpperCase()
-                                  : item.text
-                              }`}</Text>
-                            </Card>
-                          </TouchableOpacity>
-                        )
-                      }}
-                    />
-                  </View>
-                </View>
-              )
-            }}
+            renderItem={this.renderTopicList}
           />
         }
       </View>
+    )
+  }
+
+  renderTopicList = ({ item }) => {
+    return (
+      <View key={item.title} style={{}}>
+        <Text
+          style={{
+            fontSize: 24,
+            fontWeight: 'bold',
+            textAlign: 'center',
+            padding: 10
+          }}
+        >
+          {`${item.title}`}
+        </Text>
+        <View style={{ padding: 16 }}>
+          <FlatList
+            keyExtractor={(item, index) => index.toString()}
+            numColumns={3}
+            extraData={this.state}
+            data={item.words}
+            renderItem={this.renderWordInTopic}
+          />
+        </View>
+      </View>
+    )
+  }
+
+  renderWordInTopic = ({ item }) => {
+    return (
+      <TouchableOpacity
+        onPress={() => this.toggleIsLearningState(item)}
+        key={item._id}
+        style={[styles.word]}
+      >
+        <Card
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: item.isCompleted ? '#fcfcfc' : 'white'
+          }}
+        >
+          {item.isLearning ? (
+            <Ionicons
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 10
+              }}
+              name="ios-checkmark"
+              size={32}
+              color="red"
+            />
+          ) : null}
+          <Text style={{ color: this.state.textColor }}>{`${
+            this.state.isUpperCase ? item.text.toUpperCase() : item.text
+          }`}</Text>
+        </Card>
+      </TouchableOpacity>
     )
   }
 }

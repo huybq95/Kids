@@ -396,7 +396,6 @@ export function getWordsOfTopic(title) {
         let words = res.sort((a, b) => {
           return a.text.localeCompare(b.text)
         })
-        console.log('getWordsOfTopic', db.getAllData())
         resolve(words)
       }
     })
@@ -509,13 +508,11 @@ export function getTodayLesson(numsWord) {
                   { $set: { isLearning: true } }
                 )
               }
-              console.log('3333')
               resetStateIsLearning(listWordsLearning).then(() => {
                 resolve(listWordsLearning)
               })
             })
           } else {
-            console.log('4444')
             resetStateIsLearning(res).then(() => {
               resolve(res)
             })
@@ -592,8 +589,10 @@ export function saveHistory(words, numsNewWord) {
       } else {
         for (let i = 0; i < numsNewWord; i++) {
           let word = history.words[i]
-          db.update({ _id: word._id }, { $set: { isCompleted: true } })
-          db.update({ _id: word._id }, { $set: { isLearning: false } })
+          db.update(
+            { _id: word._id },
+            { $set: { isCompleted: true, isLearning: false } }
+          )
         }
       }
     })
@@ -606,7 +605,6 @@ export function editLesson(lesson) {
       if (err) {
         reject(err)
       } else {
-        console.log('Updated !')
         resolve()
       }
     })

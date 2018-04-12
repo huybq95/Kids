@@ -1,5 +1,13 @@
 import React from 'react'
-import { Text, View, StyleSheet, Dimensions, ScrollView } from 'react-native'
+import {
+  Text,
+  View,
+  StyleSheet,
+  Dimensions,
+  ScrollView,
+  ActivityIndicator,
+  FlatList
+} from 'react-native'
 import { TabNavigator } from 'react-navigation'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
@@ -30,10 +38,9 @@ class History extends React.PureComponent {
     this.state = {
       textColor: this.props.settings.textColor || 'red',
       isUpperCase: this.props.settings.isUpperCase || false,
-      data: []
+      data: [],
+      loading: false
     }
-    this.loadData = this.loadData.bind(this)
-    this.loadData()
   }
 
   componentDidMount() {
@@ -43,7 +50,7 @@ class History extends React.PureComponent {
     })
   }
 
-  loadData() {
+  loadData = () => {
     db.getSetting().then(data => {
       this.setState({
         textColor: data.textColor,
@@ -51,14 +58,15 @@ class History extends React.PureComponent {
       })
     })
     db.getHistory().then(data => {
-      this.setState({ data: data })
+      this.setState({ data: data, loading: false })
     })
   }
 
   componentWillMount() {
-    setInterval(() => {
-      this.loadData()
-    }, 1000)
+    this.setState({ loading: true })
+    // setInterval(() => {
+    this.loadData()
+    // }, 1000)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -81,36 +89,49 @@ class History extends React.PureComponent {
     return string
   }
 
+  renderItem = ({ item, index }) => {
+    return (
+      <View key={index} style={styles.history}>
+        <Card>
+          <CardItem header>
+            <Text style={{ fontSize: 24, fontWeight: 'bold' }}>
+              {item.timeCompleted}
+            </Text>
+            {/* //format day dd/mm/yyyy */}
+          </CardItem>
+          <CardItem style={{ alignItems: 'center' }}>
+            <Text
+              style={{
+                fontSize: 24,
+                color: this.state.textColor
+              }}
+            >{`${
+              this.state.isUpperCase
+                ? this.getListWordToString(item.words).toUpperCase()
+                : this.getListWordToString(item.words)
+            }`}</Text>
+          </CardItem>
+        </Card>
+      </View>
+    )
+  }
+
   render() {
     let { data } = this.state
     return (
-      <ScrollView style={styles.container}>
-        {data.length > 0
-          ? data.map((e, i) => {
-              return (
-                <View key={i} style={styles.history}>
-                  <Card>
-                    <CardItem header>
-                      <Text style={{ fontSize: 24, fontWeight: 'bold' }}>
-                        {e.timeCompleted}
-                      </Text>
-                      {/* //format day dd/mm/yyyy */}
-                    </CardItem>
-                    <CardItem style={{ alignItems: 'center' }}>
-                      <Text
-                        style={{ fontSize: 24, color: this.state.textColor }}
-                      >{`${
-                        this.state.isUpperCase
-                          ? this.getListWordToString(e.words).toUpperCase()
-                          : this.getListWordToString(e.words)
-                      }`}</Text>
-                    </CardItem>
-                  </Card>
-                </View>
-              )
-            })
-          : null}
-      </ScrollView>
+      <View style={styles.container}>
+        {this.state.loading ? (
+          <ActivityIndicator />
+        ) : (
+          <View style={{ flex: 1 }}>
+            <FlatList
+              data={data}
+              renderItem={this.renderItem}
+              keyExtractor={(item, index) => index.toString()}
+            />
+          </View>
+        )}
+      </View>
     )
   }
 }
@@ -130,8 +151,8 @@ function mapDispatchToProps(dispatch) {
 export default connect(mapStateToProps, mapDispatchToProps)(History)
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, justifyContent: 'center' },
   history: {
-    height: Dimensions.get('window').height / 4
+    flex: 1
   }
 })

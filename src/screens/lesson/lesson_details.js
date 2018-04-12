@@ -1,5 +1,5 @@
 import React from 'react'
-import { Text, View, StyleSheet, Dimensions } from 'react-native'
+import { Text, View, StyleSheet, Dimensions, AsyncStorage } from 'react-native'
 import { TabNavigator } from 'react-navigation'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
@@ -67,8 +67,9 @@ export class LessonDetails extends React.PureComponent {
 
   async speech() {
     let item = this.props.navigation.state.params.data[this.state.index]
-    // console.log('speech item ', item)
-    if (item.recordingPath && item.recordingDuration) {
+
+    console.log('speech item ', item, this.state.index)
+    if (item && item.recordingPath && item.recordingDuration) {
       this.sound = new Audio.Sound()
       this.setState({ recordingDuration: item.recordingDuration })
       try {
@@ -94,7 +95,9 @@ export class LessonDetails extends React.PureComponent {
 
   isCompleted() {
     let { data } = this.props.navigation.state.params
+    console.log('save history', data)
     db.saveHistory(data, this.numsNewWord)
+    AsyncStorage.setItem(Constants.StorageKey.LEARNED, 'true')
   }
 
   render() {
