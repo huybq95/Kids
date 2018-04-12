@@ -9,7 +9,7 @@ import {
   BackHandler
 } from 'react-native'
 import { Permissions, Notifications } from 'expo'
-
+import Constants from './src/constants/Constants'
 import StackNavigator from './src/router'
 import * as db from './src/db/db'
 import { Provider } from 'react-redux'
@@ -26,6 +26,13 @@ async function register() {
 export default class App extends React.Component {
   constructor(props) {
     super(props)
+  }
+
+  componentWillMount() {
+    BackHandler.addEventListener('hardwareBackPress', () => {
+      return true
+    })
+
     db.getSetting().then(data => {
       if (!data) {
         console.log('no data')
@@ -37,11 +44,13 @@ export default class App extends React.Component {
     register()
   }
 
-  componentWillMount() {
-    BackHandler.addEventListener('hardwareBackPress', () => {
-      return true
-    })
-  }
+  // componentDidMount(){
+  //init store
+  // let learnedToday = await AsyncStorage.getItem(Constants.StorageKey.LEARNED)
+  // if(learnedToday === 'true'){
+
+  // }
+  // }
 
   componentWillUnmount() {
     BackHandler.removeEventListener('hardwareBackPress', () => {

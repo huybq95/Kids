@@ -1,8 +1,10 @@
-import { combineReducers } from 'redux';
-import { settings } from '../screens/settings/setting.reducer';
+import { combineReducers } from 'redux'
+import { settings } from '../screens/settings/setting.reducer'
+import { appState } from '../actions/appState'
 
 const rootReducer = combineReducers({
-    settings
+  settings,
+  appState
 })
 
-export default rootReducer;
+export default rootReducer

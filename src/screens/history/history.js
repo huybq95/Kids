@@ -64,9 +64,7 @@ class History extends React.PureComponent {
 
   componentWillMount() {
     this.setState({ loading: true })
-    // setInterval(() => {
     this.loadData()
-    // }, 1000)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -118,19 +116,28 @@ class History extends React.PureComponent {
 
   render() {
     let { data } = this.state
-    return (
-      <View style={styles.container}>
-        {this.state.loading ? (
+    if (this.state.loading)
+      return (
+        <View style={styles.container}>
           <ActivityIndicator />
-        ) : (
-          <View style={{ flex: 1 }}>
-            <FlatList
-              data={data}
-              renderItem={this.renderItem}
-              keyExtractor={(item, index) => index.toString()}
-            />
-          </View>
-        )}
+        </View>
+      )
+    if (data.length == 0)
+      return (
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
+          <Text>Bạn chưa học bài nào!</Text>
+        </View>
+      )
+
+    return (
+      <View style={{ flex: 1 }}>
+        <FlatList
+          data={data}
+          renderItem={this.renderItem}
+          keyExtractor={(item, index) => index.toString()}
+        />
       </View>
     )
   }

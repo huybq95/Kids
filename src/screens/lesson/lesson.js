@@ -84,7 +84,7 @@ class Lesson extends React.PureComponent {
     db.getSetting().then(data => {
       this.setState(
         {
-          textColor: data.textColor,
+          textColor: data && data.textColor,
           isUpperCase: data.isUpper,
           wordCount: data.numsWord
         },
