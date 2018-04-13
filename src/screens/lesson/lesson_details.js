@@ -1,7 +1,7 @@
 import React from 'react'
 import { Text, View, StyleSheet, Dimensions, AsyncStorage } from 'react-native'
 import { TabNavigator } from 'react-navigation'
-import { bindActionCreators } from 'redux'
+import * as AppStateActions from '../../stores/appState/actions'
 import { connect } from 'react-redux'
 import { DeckSwiper, Card, Container } from 'native-base'
 import { Speech, ScreenOrientation, Audio } from 'expo'
@@ -20,8 +20,8 @@ export class LessonDetails extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {
-      textColor: this.props.settings.textColor || 'red',
-      isUpperCase: this.props.settings.isUpperCase || 'black',
+      textColor: this.props.setting.textColor || 'red',
+      isUpperCase: this.props.setting.isUpperCase || 'black',
       index: 0,
       mute: false
     }
@@ -32,10 +32,10 @@ export class LessonDetails extends React.PureComponent {
   }
 
   componentDidMount() {
-    let { settings } = this.props
+    let { setting } = this.props
     this.setState({
-      textColor: this.props.settings.textColor,
-      isUpperCase: this.props.settings.isUpperCase
+      textColor: this.props.setting.textColor,
+      isUpperCase: this.props.setting.isUpperCase
     })
     setTimeout(() => this.speech(), 500)
     db.getSetting().then(data => {
@@ -43,7 +43,7 @@ export class LessonDetails extends React.PureComponent {
         autoSwipe = setInterval(() => {
           this._deckSwiper._root.swipeRight()
           this.nextWord()
-        }, settings.timeShow)
+        }, setting.timeShow)
       }
     })
 
@@ -55,13 +55,13 @@ export class LessonDetails extends React.PureComponent {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps && nextProps.settings) {
+    if (nextProps && nextProps.setting) {
       this.setState({
-        textColor: nextProps.settings.textColor,
-        isUpperCase: nextProps.settings.isUpperCase,
+        textColor: nextProps.setting.textColor,
+        isUpperCase: nextProps.setting.isUpperCase,
         isManual: nextProps.isManual
       })
-      this.numsNewWord = nextProps.settings.numsNewWord
+      this.numsNewWord = nextProps.setting.numsNewWord
     }
   }
 
@@ -87,26 +87,28 @@ export class LessonDetails extends React.PureComponent {
   nextWord() {
     this.setState({ index: this.state.index + 1 }, () => {
       if (this.state.index === this.numsWord) {
-        return
+        this.isCompleted()
+        clearInterval(autoSwipe)
+        setTimeout(() => this.props.navigation.goBack(), 1000)
+      } else {
+        if (!this.state.mute) this.speech()
       }
-      if (!this.state.mute) this.speech()
     })
   }
 
-  isCompleted() {
-    let { data } = this.props.navigation.state.params
-    console.log('save history', data)
-    db.saveHistory(data, this.numsNewWord)
-    AsyncStorage.setItem(Constants.StorageKey.LEARNED, 'true')
+  async isCompleted() {
+    if (!this.props.learnedToday) {
+      let { data } = this.props.navigation.state.params
+      console.log('save history', data)
+      db.saveHistory(data, this.numsNewWord)
+      await AsyncStorage.setItem(Constants.StorageKey.LEARNED, 'true')
+      this.props.checkLearnedToday()
+    }
   }
 
   render() {
     let { data } = this.props.navigation.state.params
-    if (this.state.index === this.numsWord) {
-      this.isCompleted()
-      clearInterval(autoSwipe)
-      setTimeout(() => this.props.navigation.goBack(), 1000)
-    }
+
     db.getSetting().then(data => {
       this.numsNewWord = data.numsNewWord
     })
@@ -160,15 +162,16 @@ export class LessonDetails extends React.PureComponent {
 
 function mapStateToProps(state, ownProps) {
   return {
-    settings: state.settings
+    setting: state.setting,
+    learnedToday: state.appState.learnedToday
   }
 }
 
-// function mapDispatchToProps(dispatch) {
-//   return {
-//     actions: bindActionCreators(historyActions, dispatch)
-//   };
-// }
+function mapDispatchToProps(dispatch) {
+  return {
+    checkLearnedToday: () => dispatch(AppStateActions.checkLearnedToday())
+  }
+}
 
 export default connect(mapStateToProps)(LessonDetails)
 

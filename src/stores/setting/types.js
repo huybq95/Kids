@@ -1,0 +1,1 @@
+export const SAVE_SETTING = 'SAVE_SETTING'

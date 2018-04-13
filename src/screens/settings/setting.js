@@ -17,7 +17,7 @@ import ModalDropdown from 'react-native-modal-dropdown'
 import { Ionicons } from '@expo/vector-icons'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import * as settingActions from './setting.actions'
+import * as SettingActions from '../../stores/setting/actions'
 import moment from 'moment'
 // import {Notifications} from 'expo';
 
@@ -99,7 +99,7 @@ class Setting extends React.PureComponent {
     this.setState({ settings: objSetting })
   }
 
-  saveSettings(data) {
+  async saveSettings(data) {
     const curSetting = this.state.settings
     let objSetting = {}
     objSetting.isUpper = data.isUpperCase || curSetting.isUpperCase
@@ -109,16 +109,15 @@ class Setting extends React.PureComponent {
     objSetting.notification = data.isAlert || curSetting.isAlert
     objSetting.alerts = data.alerts || curSetting.alerts
     objSetting.isManual = data.isManual || curSetting.isManual
-    db.saveSetting(objSetting).then(() => {
-      this.loadData()
-    })
+    await db.saveSetting(objSetting)
+    this.loadData()
+    // this.props.
   }
 
   changeTextType(value) {
     this.setState(
       { settings: { ...this.state.settings, isUpperCase: value } },
       () => {
-        this.props.actions.saveSetting(this.state.settings)
         this.saveSettings(this.state.settings)
       }
     )
@@ -128,7 +127,6 @@ class Setting extends React.PureComponent {
     this.setState(
       { settings: { ...this.state.settings, isManual: value } },
       () => {
-        this.props.actions.saveSetting(this.state.settings)
         this.saveSettings(this.state.settings)
       }
     )
@@ -143,7 +141,7 @@ class Setting extends React.PureComponent {
         settings: { ...settings, alert: _alerts }
       },
       () => {
-        this.props.saveSettings(this.state.settings)
+        this.saveSettings(this.state.settings)
       }
     )
   }
@@ -151,7 +149,6 @@ class Setting extends React.PureComponent {
   changeAlert() {
     // Vibration.vibrate()
     this.setState({ settings: { ...this.state.settings } }, () => {
-      this.props.actions.saveSetting(this.state.settings)
       this.saveSettings(this.state.settings)
     })
   }
@@ -160,7 +157,6 @@ class Setting extends React.PureComponent {
     this.setState(
       { settings: { ...this.state.settings, textColor: color } },
       () => {
-        this.props.actions.saveSetting(this.state.settings)
         this.saveSettings(this.state.settings)
       }
     )
@@ -171,7 +167,6 @@ class Setting extends React.PureComponent {
     this.setState(
       { settings: { ...this.state.settings, wordCount: value } },
       () => {
-        this.props.actions.saveSetting(this.state.settings)
         this.saveSettings(this.state.settings)
       }
     )
@@ -182,7 +177,6 @@ class Setting extends React.PureComponent {
     this.setState(
       { settings: { ...this.state.settings, newCount: value } },
       () => {
-        this.props.actions.saveSetting(this.state.settings)
         this.saveSettings(this.state.settings)
       }
     )
@@ -236,7 +230,6 @@ class Setting extends React.PureComponent {
     this.setState(
       { settings: { ...this.state.settings, isAlert: value } },
       () => {
-        this.props.actions.saveSetting(this.state.settings)
         this.saveSettings(this.state.settings)
       }
     )
@@ -444,7 +437,7 @@ function mapStateToProps(state, ownProps) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    actions: bindActionCreators(settingActions, dispatch)
+    saveSetting: payload => dispatch(SettingActions.saveSetting(payload))
   }
 }
 

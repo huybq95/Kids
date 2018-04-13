@@ -12,8 +12,6 @@ import { TabNavigator } from 'react-navigation'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import { Card, CardItem } from 'native-base'
-
-import * as historyActions from './history.actions'
 import * as db from '../../db/db'
 
 class History extends React.PureComponent {
@@ -36,8 +34,8 @@ class History extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {
-      textColor: this.props.settings.textColor || 'red',
-      isUpperCase: this.props.settings.isUpperCase || false,
+      textColor: this.props.setting.textColor || 'red',
+      isUpperCase: this.props.setting.isUpperCase || false,
       data: [],
       loading: false
     }
@@ -45,8 +43,8 @@ class History extends React.PureComponent {
 
   componentDidMount() {
     this.setState({
-      textColor: this.props.settings.textColor,
-      isUpperCase: this.props.settings.isUpperCase
+      textColor: this.props.setting.textColor,
+      isUpperCase: this.props.setting.isUpperCase
     })
   }
 
@@ -68,10 +66,10 @@ class History extends React.PureComponent {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps && nextProps.settings) {
+    if (nextProps && nextProps.setting) {
       this.setState({
-        textColor: nextProps.settings.textColor,
-        isUpperCase: nextProps.settings.isUpperCase
+        textColor: nextProps.setting.textColor,
+        isUpperCase: nextProps.setting.isUpperCase
       })
     }
   }
@@ -145,13 +143,15 @@ class History extends React.PureComponent {
 
 function mapStateToProps(state, ownProps) {
   return {
-    settings: state.settings
+    setting: state.setting
   }
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    actions: bindActionCreators(historyActions, dispatch)
+    saveSetting: payload => {
+      SettingActions.saveSetting(payload)
+    }
   }
 }
 

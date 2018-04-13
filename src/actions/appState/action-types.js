@@ -1,1 +1,0 @@
-export const SET_LEARNED_TODAY = 'SET_LEARNED_TODAY'

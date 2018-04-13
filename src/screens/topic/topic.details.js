@@ -65,8 +65,8 @@ class TopicDetails extends React.PureComponent {
       newWord: null,
       isEditing: false,
       selectItem: {},
-      textColor: this.props.settings.textColor || 'black',
-      isUpperCase: this.props.settings.isUpperCase || 'black',
+      textColor: this.props.setting.textColor || 'black',
+      isUpperCase: this.props.setting.isUpperCase || 'black',
 
       isLoading: false,
       recordingDuration: null,
@@ -92,16 +92,16 @@ class TopicDetails extends React.PureComponent {
 
   componentDidMount() {
     this.setState({
-      textColor: this.props.settings.textColor,
-      isUpperCase: this.props.settings.isUpperCase
+      textColor: this.props.setting.textColor,
+      isUpperCase: this.props.setting.isUpperCase
     })
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps && nextProps.settings) {
+    if (nextProps && nextProps.setting) {
       this.setState({
-        textColor: nextProps.settings.textColor,
-        isUpperCase: nextProps.settings.isUpperCase
+        textColor: nextProps.setting.textColor,
+        isUpperCase: nextProps.setting.isUpperCase
       })
     }
   }
@@ -395,7 +395,7 @@ class TopicDetails extends React.PureComponent {
 
 function mapStateToProps(state, ownProps) {
   return {
-    settings: state.settings
+    setting: state.setting
   }
 }
 

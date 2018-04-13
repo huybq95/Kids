@@ -46,8 +46,8 @@ class LessonEdit extends React.PureComponent {
       words: [],
       wordCount: parseInt(this.props.navigation.state.params.counter),
       counter: 0,
-      textColor: this.props.settings.textColor || 'red',
-      isUpperCase: this.props.settings.isUpperCase || false
+      textColor: this.props.setting.textColor || 'red',
+      isUpperCase: this.props.setting.isUpperCase || false
     }
   }
 
@@ -80,10 +80,10 @@ class LessonEdit extends React.PureComponent {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.settings !== this.props.settings) {
+    if (nextProps.setting !== this.props.setting) {
       this.setState({
-        textColor: nextProps.settings.textColor,
-        isUpperCase: nextProps.settings.isUpperCase
+        textColor: nextProps.setting.textColor,
+        isUpperCase: nextProps.setting.isUpperCase
       })
     }
   }
@@ -226,7 +226,7 @@ class LessonEdit extends React.PureComponent {
 
 function mapStateToProps(state, ownProps) {
   return {
-    settings: state.settings
+    setting: state.setting
   }
 }
 

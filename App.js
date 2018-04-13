@@ -10,10 +10,11 @@ import {
 } from 'react-native'
 import { Permissions, Notifications } from 'expo'
 import Constants from './src/constants/Constants'
-import StackNavigator from './src/router'
 import * as db from './src/db/db'
 import { Provider } from 'react-redux'
-import configureStore from './src/store/configureStore'
+import configureStore from './src/stores/configureStore'
+import RootWithNavigationState from './src/navigator/RootNavigator'
+import ProcessingPrompt from './src/components/ProcessingPrompt'
 
 const store = configureStore()
 
@@ -44,14 +45,6 @@ export default class App extends React.Component {
     register()
   }
 
-  // componentDidMount(){
-  //init store
-  // let learnedToday = await AsyncStorage.getItem(Constants.StorageKey.LEARNED)
-  // if(learnedToday === 'true'){
-
-  // }
-  // }
-
   componentWillUnmount() {
     BackHandler.removeEventListener('hardwareBackPress', () => {
       return true
@@ -61,7 +54,10 @@ export default class App extends React.Component {
   render() {
     return (
       <Provider store={store}>
-        <StackNavigator />
+        <View style={{ flex: 1 }}>
+          <RootWithNavigationState />
+          <ProcessingPrompt />
+        </View>
       </Provider>
     )
   }

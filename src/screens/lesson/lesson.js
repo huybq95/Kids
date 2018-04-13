@@ -18,27 +18,12 @@ import ActionButton from 'react-native-action-button'
 import Fab from '../../components/fab'
 import * as db from '../../db/db'
 import { FlatList } from 'react-native-gesture-handler'
-import * as settingActions from '../settings/setting.actions'
+import * as SettingActions from '../../stores/setting/actions'
+import * as AppStateActions from '../../stores/appState/actions'
 import Constants from '../../constants/Constants'
 
 const WIDTH = (Dimensions.get('window').width - 56) / 3
 const HEIGHT = (Dimensions.get('window').height - 300) / 5
-const actions = [
-  {
-    text: 'Học',
-    icon: require('../../img/play.png'),
-    name: 'bt_learn',
-    position: 1,
-    color: 'red'
-  }
-  // , {
-  //   text: 'Sửa',
-  //   icon: require('../../img/edit.png'),
-  //   name: 'bt_edit',
-  //   position: 2,
-  //   color: 'red'
-  // }
-]
 
 // action chỉ để Học còn Sửa để góc trên bên phải ngang với title
 class Lesson extends React.PureComponent {
@@ -50,7 +35,7 @@ class Lesson extends React.PureComponent {
       headerRight: (
         <Entypo
           name="edit"
-          color="white"
+          color={params.learnedToday ? '#999999' : 'white'}
           size={30}
           style={{ paddingHorizontal: 20 }}
           onPress={params.onPressEdit}
@@ -71,37 +56,37 @@ class Lesson extends React.PureComponent {
     super(props)
     this.state = {
       data: [],
-      textColor: this.props.settings ? this.props.settings.textColor : 'red',
-      isUpperCase: this.props.settings.isUpperCase || false,
-      wordCount: this.props.settings.wordCount || '5',
-      loading: false,
-      loadingDialog: false
+      textColor: this.props.setting ? this.props.setting.textColor : 'red',
+      isUpperCase: this.props.setting ? this.props.setting.isUpperCase : false,
+      wordCount: this.props.setting.wordCount || '5',
+      loading: false
     }
   }
 
-  componentWillMount() {
+  async componentWillMount() {
     this.setState({ loading: true })
-    db.getSetting().then(data => {
-      this.setState(
-        {
-          textColor: data && data.textColor,
-          isUpperCase: data.isUpper,
-          wordCount: data.numsWord
-        },
-        () => {
-          this.loadData()
-        }
-      )
-    })
+    let data = await db.getSetting()
+    this.setState(
+      {
+        textColor: data && data.textColor,
+        isUpperCase: data.isUpper,
+        wordCount: data.numsWord
+      },
+      () => {
+        this.loadData()
+      }
+    )
+
     this.props.navigation.setParams({ onPressEdit: this.onPressEdit })
   }
 
   onPressEdit = () => {
-    this.props.navigation.navigate('LessonEdit', {
-      data: this.state.data,
-      counter: this.state.wordCount,
-      loadData: this.loadData.bind(this)
-    })
+    if (!this.props.learnedToday)
+      this.props.navigation.navigate('LessonEdit', {
+        data: this.state.data,
+        counter: this.state.wordCount,
+        loadData: this.loadData.bind(this)
+      })
   }
 
   convertTime(time) {
@@ -113,7 +98,7 @@ class Lesson extends React.PureComponent {
   }
 
   componentDidMount() {
-    this.props.settings.alerts.map((e, i) => {
+    this.props.setting.alerts.map((e, i) => {
       let _time = this.convertTime(e.time)
       let date = new Date()
       date.setHours(_time.hour)
@@ -141,30 +126,31 @@ class Lesson extends React.PureComponent {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps && nextProps.settings && !this.state.loading) {
+    if (this.props.setting !== nextProps.setting && !this.state.loading) {
       this.setState(
         {
-          textColor: nextProps.settings.textColor,
-          isUpperCase: nextProps.settings.isUpperCase,
-          wordCount: nextProps.settings.wordCount
+          textColor: nextProps.setting.textColor,
+          isUpperCase: nextProps.setting.isUpperCase,
+          wordCount: nextProps.setting.wordCount
         },
         () => {
           this.loadData()
         }
       )
     }
+    if (this.props.learnedToday !== nextProps.learnedToday) {
+      this.props.navigation.setParams({ learnedToday: nextProps.learnedToday })
+    }
   }
 
   onPressLearn = async name => {
-    if (!this.state.loading && !this.state.loadingDialog) {
-      this.setState({ loadingDialog: true })
-      await this.loadData()
-      db.resetStateIsLearning(this.state.data)
-      let data = this.state.data.slice()
-      data.sort(() => Math.random() - 0.5)
-      this.props.navigation.navigate('LessonDetails', { data })
-      this.setState({ loadingDialog: false })
-    }
+    this.props.showHideLoading(true, 'Đang tạo bài học...')
+    await this.loadData()
+    db.resetStateIsLearning(this.state.data)
+    let data = this.state.data.slice()
+    data.sort(() => Math.random() - 0.5)
+    this.props.navigation.navigate('LessonDetails', { data })
+    this.props.showHideLoading(false)
   }
 
   render() {
@@ -213,40 +199,15 @@ class Lesson extends React.PureComponent {
               />
             )}
           </CardItem>
-          <ActionButton
-            buttonColor="red"
-            renderIcon={() => (
-              <Ionicons name="ios-play" color="white" size={30} />
-            )}
-            onPress={this.onPressLearn}
-          />
-          <Modal
-            visible={this.state.loadingDialog}
-            transparent={true}
-            onRequestClose={() => {}}
-          >
-            <View
-              style={{
-                flex: 1,
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              <View
-                style={{
-                  width: Constants.screen.width / 3,
-                  height: 50,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  borderWidth: 1,
-                  borderRadius: 5
-                }}
-              >
-                <ActivityIndicator />
-                <Text>Loading...</Text>
-              </View>
-            </View>
-          </Modal>
+          {!this.state.loading && (
+            <ActionButton
+              buttonColor="red"
+              renderIcon={() => (
+                <Ionicons name="ios-play" color="white" size={30} />
+              )}
+              onPress={this.onPressLearn}
+            />
+          )}
         </Card>
       </View>
     )
@@ -255,13 +216,16 @@ class Lesson extends React.PureComponent {
 
 function mapStateToProps(state, ownProps) {
   return {
-    settings: state.settings
+    setting: state.setting,
+    learnedToday: state.appState.learnedToday
   }
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    actions: bindActionCreators(settingActions, dispatch)
+    saveSetting: payload => dispatch(SettingActions.saveSetting(payload)),
+    showHideLoading: (visible, message) =>
+      dispatch(AppStateActions.showHideLoading(visible, message))
   }
 }
 

@@ -16,8 +16,6 @@ import { Card, CardItem, Body } from 'native-base'
 import Modal from 'react-native-modal'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import * as topicActions from './topic.actions'
-
 import { TabNavigator } from 'react-navigation'
 import * as db from '../../db/db'
 import Fab from '../../components/fab'
@@ -30,16 +28,16 @@ export class TopicItem extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {
-      textColor: this.props.settings.textColor || 'black',
-      isUpperCase: this.props.settings.isUpperCase || false,
+      textColor: this.props.setting.textColor || 'black',
+      isUpperCase: this.props.setting.isUpperCase || false,
       data: this.props.data
     }
   }
 
   componentWillReceiveProps(nextProps) {
     this.setState({
-      textColor: nextProps.settings.textColor,
-      isUpperCase: nextProps.settings.isUpperCase,
+      textColor: nextProps.setting.textColor,
+      isUpperCase: nextProps.setting.isUpperCase,
       data: nextProps.data
     })
   }
@@ -164,14 +162,12 @@ const styles = StyleSheet.create({
 
 function mapStateToProps(state, ownProps) {
   return {
-    settings: state.settings
+    setting: state.setting
   }
 }
 
 function mapDispatchToProps(dispatch) {
-  return {
-    actions: bindActionCreators(topicActions, dispatch)
-  }
+  return null
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(TopicItem)
+export default connect(mapStateToProps)(TopicItem)
