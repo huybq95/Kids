@@ -467,6 +467,8 @@ export function getTodayLesson(numsWord) {
       (err, res) => {
         if (err) {
         } else {
+          //res: words isLearning and not complete
+          console.log('gettodaylesson1 ', res, numsWord)
           if (res.length === 0) {
             let listWordsLearning = []
             getAllWords().then(words => {
@@ -483,6 +485,7 @@ export function getTodayLesson(numsWord) {
               })
             })
           } else if (res.length < numsWord) {
+            console.log('res len < numwords ')
             let listWordsLearning = []
             getAllWords().then(words => {
               for (let i = 0; i < numsWord; i++) {

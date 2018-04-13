@@ -173,7 +173,7 @@ function mapDispatchToProps(dispatch) {
   }
 }
 
-export default connect(mapStateToProps)(LessonDetails)
+export default connect(mapStateToProps, mapDispatchToProps)(LessonDetails)
 
 const styles = StyleSheet.create({
   container: {

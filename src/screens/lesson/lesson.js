@@ -69,8 +69,8 @@ class Lesson extends React.PureComponent {
     this.setState(
       {
         textColor: data && data.textColor,
-        isUpperCase: data.isUpper,
-        wordCount: data.numsWord
+        isUpperCase: data && data.isUpper,
+        wordCount: data && data.numsWord
       },
       () => {
         this.loadData()

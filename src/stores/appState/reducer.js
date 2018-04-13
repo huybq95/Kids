@@ -13,7 +13,7 @@ export default function reduce(state = initialState, action) {
     case types.SET_LEARNED_TODAY:
       return {
         ...state,
-        learnedToday: action.learnedToday
+        learnedToday: action.learnedToday === 'true'
       }
     case types.SHOW_HIDE_LOADING:
       return {
