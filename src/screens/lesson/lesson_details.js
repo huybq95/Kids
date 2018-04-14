@@ -3,12 +3,13 @@ import { Text, View, StyleSheet, Dimensions, AsyncStorage } from 'react-native'
 import { TabNavigator } from 'react-navigation'
 import * as AppStateActions from '../../stores/appState/actions'
 import { connect } from 'react-redux'
-import { DeckSwiper, Card, Container } from 'native-base'
+import { Card, Container } from 'native-base'
 import { Speech, ScreenOrientation, Audio } from 'expo'
-import Ionicons from '@expo/vector-icons/Ionicons'
+import { Ionicons, Entypo } from '@expo/vector-icons'
 import * as db from '../../db/db'
 import Constants from '../../constants/Constants'
 import ActionButton from 'react-native-action-button'
+import Swiper from 'react-native-swiper'
 
 var autoSwipe
 
@@ -23,7 +24,8 @@ export class LessonDetails extends React.PureComponent {
       textColor: this.props.setting.textColor || 'red',
       isUpperCase: this.props.setting.isUpperCase || 'black',
       index: 0,
-      mute: false
+      mute: false,
+      data: []
     }
     this.numsWord = this.props.navigation
       ? this.props.navigation.state.params.data.length
@@ -47,6 +49,12 @@ export class LessonDetails extends React.PureComponent {
       }
     })
 
+    let { data } = this.props.navigation.state.params
+    data.push('')
+    this.setState({ data })
+    db.getSetting().then(data => {
+      this.numsNewWord = data.numsNewWord
+    })
     ScreenOrientation.allow(ScreenOrientation.Orientation.LANDSCAPE)
   }
 
@@ -84,13 +92,12 @@ export class LessonDetails extends React.PureComponent {
     }
   }
 
-  nextWord() {
-    this.setState({ index: this.state.index + 1 }, () => {
+  onIndexChanged = index => {
+    this.setState({ index: this.state.index + 1 }, async () => {
       if (this.state.index === this.numsWord) {
         //end
         console.log('end word ')
-        this.isCompleted()
-        clearInterval(autoSwipe)
+        await this.isCompleted()
         this.props.navigation.goBack()
       } else {
         if (!this.state.mute) this.speech()
@@ -100,27 +107,23 @@ export class LessonDetails extends React.PureComponent {
 
   async isCompleted() {
     if (!this.props.learnedToday) {
-      let { data } = this.props.navigation.state.params
-      console.log('save history', data)
-      db.saveHistory(data, this.numsNewWord)
+      console.log('save history', this.state.data)
+      db.saveHistory(
+        this.state.data.splice(this.state.data.length - 1, 1),
+        this.numsNewWord
+      )
       await AsyncStorage.setItem(Constants.StorageKey.LEARNED, 'true')
       this.props.checkLearnedToday()
     }
   }
 
   render() {
-    let { data } = this.props.navigation.state.params
-
-    db.getSetting().then(data => {
-      this.numsNewWord = data.numsNewWord
-    })
     let { width, height } = Constants.screen
-    // let marginTop = width < height ? (height - width) / 2 : height / 6
     let marginTop = width / 12
     width = (width < height ? width : height) * 5 / 6
     return (
       <View style={{ flex: 1 }}>
-        <DeckSwiper
+        {/* <DeckSwiper
           ref={c => (this._deckSwiper = c)}
           onSwipeRight={() => this.nextWord()}
           onSwipeLeft={() => this.nextWord()}
@@ -145,7 +148,44 @@ export class LessonDetails extends React.PureComponent {
               </Text>
             </Card>
           )}
-        />
+        /> */}
+        <Swiper
+          style={styles.wrapper}
+          showsButtons={true}
+          scrollEnabled={false}
+          prevButton={<View />}
+          nextButton={<Entypo name="chevron-right" color="red" size={100} />}
+          loop={false}
+          onIndexChanged={this.onIndexChanged}
+        >
+          {this.state.data.map((item, index) => {
+            return (
+              <View style={{ flex: 1 }} key={index}>
+                {item.text ? (
+                  <Card
+                    style={[
+                      styles.container,
+                      {
+                        width,
+                        height: width,
+                        alignSelf: 'center',
+                        marginTop
+                      }
+                    ]}
+                  >
+                    <Text style={{ color: this.state.textColor, fontSize: 56 }}>
+                      {this.state.isUpperCase
+                        ? `${item.text}`.toUpperCase()
+                        : `${item.text}`}
+                    </Text>
+                  </Card>
+                ) : (
+                  <View />
+                )}
+              </View>
+            )
+          })}
+        </Swiper>
         <ActionButton
           buttonColor="red"
           renderIcon={() => (

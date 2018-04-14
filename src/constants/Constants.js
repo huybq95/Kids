@@ -8,5 +8,10 @@ export default {
   },
   StorageKey: {
     LEARNED: 'STORAGE_KEY_LEARNED'
+  },
+  State: {
+    NEW_WORD: 1,
+    LEARNING: 2,
+    LEARNED: 3
   }
 }

@@ -1,5 +1,6 @@
 import Datastore from 'react-native-local-mongodb'
 import moment from 'moment'
+import Constants from '../constants/Constants'
 
 var db = new Datastore({ filename: 'myDatabase', autoload: true })
 db.ensureIndex({ fieldName: 'isFirstLaunchApp', unique: true, sparse: true })
@@ -45,8 +46,8 @@ const words = [
     topic: 'Màu sắc',
     lesson: null,
     text: 'xanh lá',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Màu sắc xanh lá',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -54,8 +55,8 @@ const words = [
     topic: 'Màu sắc',
     lesson: null,
     text: 'đỏ',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Màu sắc đỏ',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -63,8 +64,8 @@ const words = [
     topic: 'Màu sắc',
     lesson: null,
     text: 'tím',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Màu sắc tím',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -72,8 +73,8 @@ const words = [
     topic: 'Màu sắc',
     lesson: null,
     text: 'vàng',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Màu sắc vàng',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -81,8 +82,8 @@ const words = [
     topic: 'Màu sắc',
     lesson: null,
     text: 'nâu',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Màu sắc nâu',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -90,8 +91,8 @@ const words = [
     topic: 'Màu sắc',
     lesson: null,
     text: 'đen',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Màu sắc đen',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -99,8 +100,8 @@ const words = [
     topic: 'Màu sắc',
     lesson: null,
     text: 'trắng',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Màu sắc trắng',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -108,8 +109,8 @@ const words = [
     topic: 'Màu sắc',
     lesson: null,
     text: 'hồng',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Màu sắc hồng',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -117,8 +118,8 @@ const words = [
     topic: 'Màu sắc',
     lesson: null,
     text: 'ghi',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Màu sắc ghi',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
 
@@ -127,8 +128,8 @@ const words = [
     topic: 'Động vật',
     lesson: null,
     text: 'chó',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Động vật chó',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -136,8 +137,8 @@ const words = [
     topic: 'Động vật',
     lesson: null,
     text: 'mèo',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Động vật mèo',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -145,8 +146,8 @@ const words = [
     topic: 'Động vật',
     lesson: null,
     text: 'lợn',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Động vật lợn',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -154,8 +155,8 @@ const words = [
     topic: 'Động vật',
     lesson: null,
     text: 'gà',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Động vật gà',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -163,8 +164,8 @@ const words = [
     topic: 'Động vật',
     lesson: null,
     text: 'dê',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Động vật dê',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -172,8 +173,8 @@ const words = [
     topic: 'Động vật',
     lesson: null,
     text: 'rồng',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Động vật rồng',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -181,8 +182,8 @@ const words = [
     topic: 'Động vật',
     lesson: null,
     text: 'chuột',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Động vật chuột',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -190,8 +191,8 @@ const words = [
     topic: 'Động vật',
     lesson: null,
     text: 'trâu',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Động vật trâu',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -199,8 +200,8 @@ const words = [
     topic: 'Động vật',
     lesson: null,
     text: 'ngựa',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Động vật ngựa',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -208,8 +209,8 @@ const words = [
     topic: 'Động vật',
     lesson: null,
     text: 'khỉ',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Động vật khỉ',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
 
@@ -218,8 +219,8 @@ const words = [
     topic: 'Hành động',
     lesson: null,
     text: 'đi',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Hành động đi',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -227,8 +228,8 @@ const words = [
     topic: 'Hành động',
     lesson: null,
     text: 'chạy',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Hành động chạy',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -236,8 +237,8 @@ const words = [
     topic: 'Hành động',
     lesson: null,
     text: 'ngủ',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Hành động ngủ',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -245,8 +246,8 @@ const words = [
     topic: 'Hành động',
     lesson: null,
     text: 'bò',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Hành động bò',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -254,8 +255,8 @@ const words = [
     topic: 'Hành động',
     lesson: null,
     text: 'ngồi',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Hành động ngồi',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -263,8 +264,8 @@ const words = [
     topic: 'Hành động',
     lesson: null,
     text: 'đứng',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Hành động đứng',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -272,8 +273,8 @@ const words = [
     topic: 'Hành động',
     lesson: null,
     text: 'trèo',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Hành động trèo',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -281,8 +282,8 @@ const words = [
     topic: 'Hành động',
     lesson: null,
     text: 'đấm',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Hành động đấm',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -290,8 +291,8 @@ const words = [
     topic: 'Hành động',
     lesson: null,
     text: 'đá',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Hành động đá',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -299,8 +300,8 @@ const words = [
     topic: 'Hành động',
     lesson: null,
     text: 'nhảy',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Hành động nhảy',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -308,8 +309,8 @@ const words = [
     topic: 'Hành động',
     lesson: null,
     text: 'lăn',
-    isCompleted: false,
-    isLearning: false,
+    key: 'Hành động lăn',
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
 
@@ -419,7 +420,7 @@ export function resetStateIsLearning(words) {
             const wordNotLearning = res[i]
             db.update(
               { _id: wordNotLearning._id },
-              { $set: { isLearning: false } },
+              { $set: { state: Constants.State.NEW_WORD } },
               (err, res) => {
                 if (err) {
                   reject(err)
@@ -462,67 +463,78 @@ export function resetStateIsLearning(words) {
 
 export function getTodayLesson(numsWord) {
   return new Promise((resolve, reject) => {
-    db.find(
-      { $and: [{ isLearning: true }, { isCompleted: false }] },
-      (err, res) => {
-        if (err) {
+    db.find({ state: Constants.State.LEARNING }, (err, res) => {
+      if (err) {
+      } else {
+        //res: words isLearning and not complete
+        console.log('gettodaylesson1 ', res, numsWord)
+        if (res.length === 0) {
+          let listWordsLearning = []
+          getAllWords().then(words => {
+            for (let i = 0; i < numsWord; i++) {
+              const wordLearning = words[i]
+              listWordsLearning.push(wordLearning)
+              db.update(
+                { _id: wordLearning._id },
+                { $set: { isLearning: true } }
+              )
+            }
+            resetStateIsLearning(listWordsLearning).then(() => {
+              resolve(listWordsLearning)
+            })
+          })
+        } else if (res.length < numsWord) {
+          console.log('res len < numwords ')
+          let listWordsLearning = []
+          getAllWords().then(words => {
+            for (let i = 0; i < numsWord; i++) {
+              const wordLearning = words[i]
+              listWordsLearning.push(wordLearning)
+              db.update(
+                { _id: wordLearning._id },
+                { $set: { isLearning: true } }
+              )
+            }
+            resetStateIsLearning(listWordsLearning).then(() => {
+              resolve(listWordsLearning)
+            })
+          })
+        } else if (res.length > numsWord) {
+          let listWordsLearning = []
+          getAllWords().then(words => {
+            for (let i = 0; i < numsWord; i++) {
+              const wordLearning = words[i]
+              listWordsLearning.push(wordLearning)
+              db.update(
+                { _id: wordLearning._id },
+                { $set: { isLearning: true } }
+              )
+            }
+            resetStateIsLearning(listWordsLearning).then(() => {
+              resolve(listWordsLearning)
+            })
+          })
         } else {
-          //res: words isLearning and not complete
-          console.log('gettodaylesson1 ', res, numsWord)
-          if (res.length === 0) {
-            let listWordsLearning = []
-            getAllWords().then(words => {
-              for (let i = 0; i < numsWord; i++) {
-                const wordLearning = words[i]
-                listWordsLearning.push(wordLearning)
-                db.update(
-                  { _id: wordLearning._id },
-                  { $set: { isLearning: true } }
-                )
-              }
-              resetStateIsLearning(listWordsLearning).then(() => {
-                resolve(listWordsLearning)
-              })
-            })
-          } else if (res.length < numsWord) {
-            console.log('res len < numwords ')
-            let listWordsLearning = []
-            getAllWords().then(words => {
-              for (let i = 0; i < numsWord; i++) {
-                const wordLearning = words[i]
-                listWordsLearning.push(wordLearning)
-                db.update(
-                  { _id: wordLearning._id },
-                  { $set: { isLearning: true } }
-                )
-              }
-              resetStateIsLearning(listWordsLearning).then(() => {
-                resolve(listWordsLearning)
-              })
-            })
-          } else if (res.length > numsWord) {
-            let listWordsLearning = []
-            getAllWords().then(words => {
-              for (let i = 0; i < numsWord; i++) {
-                const wordLearning = words[i]
-                listWordsLearning.push(wordLearning)
-                db.update(
-                  { _id: wordLearning._id },
-                  { $set: { isLearning: true } }
-                )
-              }
-              resetStateIsLearning(listWordsLearning).then(() => {
-                resolve(listWordsLearning)
-              })
-            })
-          } else {
-            resetStateIsLearning(res).then(() => {
-              resolve(res)
-            })
-          }
+          resetStateIsLearning(res).then(() => {
+            resolve(res)
+          })
         }
       }
-    )
+    })
+  })
+}
+
+export function getTodayLesson1(numsWord) {
+  return new Promise((resolve, reject) => {
+    //find learning word
+    db.find({ state: Constants.State.LEARNING }, (err, learningWords) => {
+      if(learningWords.length ===0){ //first time run app, no learning words
+         //find random 5 words
+         getAllWords().then(words => {
+           
+         })
+      }
+    })
   })
 }
 
@@ -585,7 +597,7 @@ export function saveHistory(words, numsNewWord) {
     let history = {}
     history.words = words
     history.type = 'history'
-    history.timeCompleted = moment(new Date().getTime()).format('DD MMM YYYY')
+    history.timeCompleted = moment(new Date().getTime()).format('DD MM YYYY')
     db.insert(history, (err, res) => {
       if (err) {
         reject(err)
@@ -594,7 +606,7 @@ export function saveHistory(words, numsNewWord) {
           let word = history.words[i]
           db.update(
             { _id: word._id },
-            { $set: { isCompleted: true, isLearning: false } }
+            { $set: { state: Constants.State.LEARNED } }
           )
         }
       }

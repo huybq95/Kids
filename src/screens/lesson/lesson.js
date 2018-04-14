@@ -80,6 +80,13 @@ class Lesson extends React.PureComponent {
     this.props.navigation.setParams({ onPressEdit: this.onPressEdit })
   }
 
+  async loadData() {
+    console.log('get today lesson')
+    let data = await db.getTodayLesson(parseInt(this.state.wordCount))
+    console.log('get today lesson done')
+    this.setState({ data: data, loading: false })
+  }
+
   onPressEdit = () => {
     if (!this.props.learnedToday)
       this.props.navigation.navigate('LessonEdit', {
@@ -116,13 +123,6 @@ class Lesson extends React.PureComponent {
         }
       )
     })
-  }
-
-  async loadData() {
-    console.log('get today lesson')
-    let data = await db.getTodayLesson(parseInt(this.state.wordCount))
-    console.log('get today lesson done')
-    this.setState({ data: data, loading: false })
   }
 
   componentWillReceiveProps(nextProps) {
