@@ -43,8 +43,8 @@ class Topic extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {
-      // textColor: this.props.settings.textColor || 'black',
-      // isUpperCase: this.props.settings.isUpperCase || false,
+      textColor: 'black',
+      isUpperCase: false,
       listTopic: [],
       newTopic: '',
       visibleModal: false,
@@ -55,10 +55,11 @@ class Topic extends React.PureComponent {
   componentWillMount() {
     this.setState({ loading: true })
     this.loadData()
-    this.setState({
-      textColor: this.props.setting.textColor,
-      isUpperCase: this.props.setting.isUpper
-    })
+    if (this.props.setting)
+      this.setState({
+        textColor: this.props.setting.textColor,
+        isUpperCase: this.props.setting.isUpper
+      })
   }
 
   // componentDidMount() {
