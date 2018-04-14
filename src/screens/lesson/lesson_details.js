@@ -87,9 +87,11 @@ export class LessonDetails extends React.PureComponent {
   nextWord() {
     this.setState({ index: this.state.index + 1 }, () => {
       if (this.state.index === this.numsWord) {
+        //end
+        console.log('end word ')
         this.isCompleted()
         clearInterval(autoSwipe)
-        setTimeout(() => this.props.navigation.goBack(), 1000)
+        this.props.navigation.goBack()
       } else {
         if (!this.state.mute) this.speech()
       }
