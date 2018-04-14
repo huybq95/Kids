@@ -10,8 +10,7 @@ import * as db from '../../db/db'
 import Constants from '../../constants/Constants'
 import ActionButton from 'react-native-action-button'
 import Swiper from 'react-native-swiper'
-
-var autoSwipe
+import * as utils from '../../utils'
 
 export class LessonDetails extends React.PureComponent {
   static navigationOptions = {
@@ -25,12 +24,25 @@ export class LessonDetails extends React.PureComponent {
       isUpperCase: this.props.setting.isUpperCase || 'black',
       index: 0,
       mute: false,
-      data: []
+      data: [],
+      autoplay: false,
+      autoplayTimeout: 2000
     }
     this.numsWord = this.props.navigation
       ? this.props.navigation.state.params.data.length
       : 0
     this.numsNewWord = 1
+  }
+  componentWillMount() {
+    let { setting } = this.props
+    this.setState({
+      autoplay: !setiing.isManual,
+      autoplayTimeout: setting.timeShow
+    })
+
+    let { data } = this.props.navigation.state.params
+    data.push('')
+    this.setState({ data })
   }
 
   componentDidMount() {
@@ -40,21 +52,7 @@ export class LessonDetails extends React.PureComponent {
       isUpperCase: this.props.setting.isUpperCase
     })
     setTimeout(() => this.speech(), 500)
-    db.getSetting().then(data => {
-      if (!data.isManual) {
-        autoSwipe = setInterval(() => {
-          this._deckSwiper._root.swipeRight()
-          this.nextWord()
-        }, setting.timeShow)
-      }
-    })
 
-    let { data } = this.props.navigation.state.params
-    data.push('')
-    this.setState({ data })
-    db.getSetting().then(data => {
-      this.numsNewWord = data.numsNewWord
-    })
     ScreenOrientation.allow(ScreenOrientation.Orientation.LANDSCAPE)
   }
 
@@ -62,16 +60,16 @@ export class LessonDetails extends React.PureComponent {
     ScreenOrientation.allow(ScreenOrientation.Orientation.PORTRAIT_UP)
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps && nextProps.setting) {
-      this.setState({
-        textColor: nextProps.setting.textColor,
-        isUpperCase: nextProps.setting.isUpperCase,
-        isManual: nextProps.isManual
-      })
-      this.numsNewWord = nextProps.setting.numsNewWord
-    }
-  }
+  // componentWillReceiveProps(nextProps) {
+  //   if (nextProps && nextProps.setting) {
+  //     this.setState({
+  //       textColor: nextProps.setting.textColor,
+  //       isUpperCase: nextProps.setting.isUpperCase,
+  //       isManual: nextProps.isManual
+  //     })
+  //     this.numsNewWord = nextProps.setting.numsNewWord
+  //   }
+  // }
 
   async speech() {
     let item = this.props.navigation.state.params.data[this.state.index]
@@ -97,7 +95,7 @@ export class LessonDetails extends React.PureComponent {
       if (this.state.index === this.numsWord) {
         //end
         console.log('end word ')
-        await this.isCompleted()
+        await this.onLearnComplete()
         this.props.navigation.goBack()
       } else {
         if (!this.state.mute) this.speech()
@@ -105,19 +103,17 @@ export class LessonDetails extends React.PureComponent {
     })
   }
 
-  async isCompleted() {
+  async onLearnComplete() {
     if (!this.props.learnedToday) {
-      console.log('save history', this.state.data)
-      db.saveHistory(
-        this.state.data.splice(this.state.data.length - 1, 1),
-        this.numsNewWord
-      )
+      console.log('update to history', this.state.data)
+      db.updateHistory(utils.getCurrentDate())
       await AsyncStorage.setItem(Constants.StorageKey.LEARNED, 'true')
       this.props.checkLearnedToday()
     }
   }
 
   render() {
+    console.log('render ', this.state.autoplay)
     let { width, height } = Constants.screen
     let marginTop = width / 12
     width = (width < height ? width : height) * 5 / 6
@@ -154,6 +150,8 @@ export class LessonDetails extends React.PureComponent {
           showsButtons={true}
           scrollEnabled={false}
           prevButton={<View />}
+          autoplay={this.state.autoplay}
+          autoplayTimeout={this.state.autoplayTimeout}
           nextButton={<Entypo name="chevron-right" color="red" size={100} />}
           loop={false}
           onIndexChanged={this.onIndexChanged}

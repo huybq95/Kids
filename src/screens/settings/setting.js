@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import * as SettingActions from '../../stores/setting/actions'
+import * as AppStateActions from '../../stores/appState/actions'
 import moment from 'moment'
 // import {Notifications} from 'expo';
 
@@ -72,21 +73,11 @@ class Setting extends React.PureComponent {
     }
   }
 
-  componentWillMount() {
-    this.loadData()
-  }
-
-  loadData() {
-    db
-      .getSetting()
-      .then(data => {
-        console.log('~~~~~', data)
-        this.getSettingsCallback(data)
-      })
-      .catch(err => {})
-  }
-
-  getSettingsCallback(data) {
+  async loadData() {
+    let data = await db.getSetting()
+    //set to redux store
+    this.props.saveSetting(data)
+    //set to state
     const curSetting = this.state.settings
     let objSetting = {}
     objSetting.isUpperCase = data.isUpper || curSetting.isUpperCase
@@ -97,9 +88,10 @@ class Setting extends React.PureComponent {
     objSetting.alerts = data.alerts || curSetting.alerts
     objSetting.isManual = data.isManual || curSetting.isManual
     this.setState({ settings: objSetting })
+    this.props.showHideLoading(false)
   }
 
-  async saveSettings(data) {
+  async saveSettingsToDB(data) {
     const curSetting = this.state.settings
     let objSetting = {}
     objSetting.isUpper = data.isUpperCase || curSetting.isUpperCase
@@ -110,29 +102,32 @@ class Setting extends React.PureComponent {
     objSetting.alerts = data.alerts || curSetting.alerts
     objSetting.isManual = data.isManual || curSetting.isManual
     await db.saveSetting(objSetting)
-    this.loadData()
+    await this.loadData()
     // this.props.
   }
 
   changeTextType(value) {
+    this.props.showHideLoading(true, 'Cập nhật cài đặt...')
     this.setState(
       { settings: { ...this.state.settings, isUpperCase: value } },
       () => {
-        this.saveSettings(this.state.settings)
+        this.saveSettingsToDB(this.state.settings)
       }
     )
   }
 
   changeManual(value) {
+    this.props.showHideLoading(true, 'Cập nhật cài đặt...')
     this.setState(
       { settings: { ...this.state.settings, isManual: value } },
       () => {
-        this.saveSettings(this.state.settings)
+        this.saveSettingsToDB(this.state.settings)
       }
     )
   }
 
   changeTime(data, position) {
+    this.props.showHideLoading(true, 'Cập nhật cài đặt...')
     let { settings } = this.state
     let _alerts = settings.alerts
     _alerts[position] = data
@@ -141,43 +136,47 @@ class Setting extends React.PureComponent {
         settings: { ...settings, alert: _alerts }
       },
       () => {
-        this.saveSettings(this.state.settings)
+        this.saveSettingsToDB(this.state.settings)
       }
     )
   }
 
   changeAlert() {
+    this.props.showHideLoading(true, 'Cập nhật cài đặt...')
     // Vibration.vibrate()
     this.setState({ settings: { ...this.state.settings } }, () => {
-      this.saveSettings(this.state.settings)
+      this.saveSettingsToDB(this.state.settings)
     })
   }
 
   changeTextColor(color) {
+    this.props.showHideLoading(true, 'Cập nhật cài đặt...')
     this.setState(
       { settings: { ...this.state.settings, textColor: color } },
       () => {
-        this.saveSettings(this.state.settings)
+        this.saveSettingsToDB(this.state.settings)
       }
     )
   }
 
   changeWordCount(index) {
+    this.props.showHideLoading(true, 'Cập nhật cài đặt...')
     let value = NUMBERS_LIST[index] + ''
     this.setState(
       { settings: { ...this.state.settings, wordCount: value } },
       () => {
-        this.saveSettings(this.state.settings)
+        this.saveSettingsToDB(this.state.settings)
       }
     )
   }
 
   changeNewCount(index) {
+    this.props.showHideLoading(true, 'Cập nhật cài đặt...')
     let value = NEW_LIST[index] + ''
     this.setState(
       { settings: { ...this.state.settings, newCount: value } },
       () => {
-        this.saveSettings(this.state.settings)
+        this.saveSettingsToDB(this.state.settings)
       }
     )
   }
@@ -230,7 +229,7 @@ class Setting extends React.PureComponent {
     this.setState(
       { settings: { ...this.state.settings, isAlert: value } },
       () => {
-        this.saveSettings(this.state.settings)
+        this.saveSettingsToDB(this.state.settings)
       }
     )
   }
@@ -437,7 +436,9 @@ function mapStateToProps(state, ownProps) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    saveSetting: payload => dispatch(SettingActions.saveSetting(payload))
+    saveSetting: payload => dispatch(SettingActions.saveSetting(payload)),
+    showHideLoading: (visible, message) =>
+      dispatch(AppStateActions.showHideLoading(visible, message))
   }
 }
 

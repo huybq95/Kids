@@ -62,13 +62,11 @@ class LessonEdit extends React.PureComponent {
       onClickSave: this.onClickSave
     })
 
-    db.getSetting().then(data => {
       this.setState({
-        textColor: data.textColor,
-        isUpperCase: data.isUpper,
-        wordCount: data.numsWord
+        textColor: this.props.setting.textColor,
+        isUpperCase: this.props.setting.isUpper,
+        wordCount: this.props.setting.numsWord
       })
-    })
     db.countIsLearning().then(data => {
       this.setState({ counter: data })
     })

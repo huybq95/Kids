@@ -1,10 +1,11 @@
 import Datastore from 'react-native-local-mongodb'
 import moment from 'moment'
+import * as utils from '../utils'
 import Constants from '../constants/Constants'
 
 var db = new Datastore({ filename: 'myDatabase', autoload: true })
 db.ensureIndex({ fieldName: 'isFirstLaunchApp', unique: true, sparse: true })
-db.ensureIndex({ fieldName: 'text', unique: true, sparse: true })
+db.ensureIndex({ fieldName: 'key', unique: true, sparse: true })
 db.ensureIndex({ fieldName: 'id', unique: true, sparse: true })
 db.ensureIndex({ fieldName: 'id1', unique: true, sparse: true })
 db.ensureIndex({ fieldName: 'timeCompleted', unique: true, sparse: true })
@@ -16,7 +17,7 @@ const setting = {
   isUpper: false,
   textColor: 'black',
   numsWord: 5,
-  numsNewWord: 1,
+  newCount: 1,
   notification: true,
   isAlert: false,
   isManual: true,
@@ -74,7 +75,7 @@ const words = [
     lesson: null,
     text: 'vàng',
     key: 'Màu sắc vàng',
-    state: Constants.State.NEW_WORD,
+    state: Constants.State.LEARNED,
     updated: new Date().getTime()
   },
   {
@@ -83,7 +84,7 @@ const words = [
     lesson: null,
     text: 'nâu',
     key: 'Màu sắc nâu',
-    state: Constants.State.NEW_WORD,
+    state: Constants.State.LEARNED,
     updated: new Date().getTime()
   },
   {
@@ -524,17 +525,43 @@ export function getTodayLesson(numsWord) {
   })
 }
 
-export function getTodayLesson1(numsWord) {
+export function getTodayLesson1(numsWord, newCount) {
   return new Promise((resolve, reject) => {
-    //find learning word
-    db.find({ state: Constants.State.LEARNING }, (err, learningWords) => {
-      if(learningWords.length ===0){ //first time run app, no learning words
-         //find random 5 words
-         getAllWords().then(words => {
-           
-         })
+    //find if today lesson created
+    db.findOne(
+      {
+        type: 'history',
+        timeCompleted: utils.getCurrentDate()
+      },
+      (err, lesson) => {
+        if (lesson) {
+          //lesson created
+          resolve(lesson.words)
+        } else {
+          //if lesson not avaiable, create new lesson: find learning word
+          db.find({ state: Constants.State.LEARNING }, (err, learningWords) => {
+            if (learningWords.length === 0) {
+              //first time run app, no learning words
+              //find random 5 words
+              getAllWords({ state: { $ne: Constants.State.LEARNED } }).then(
+                unlearnWords => {
+                  if (unlearnWords.length >= newCount) {
+                    unlearnWords.sort(() => Math.random() - 0.5)
+                    //get 5 random
+                    unlearnWords = unlearnWords.slice(0, numsWord)
+                    //save to history
+                    saveHistory(unlearnWords, numsWord, false)
+                    resolve(unlearnWords)
+                  } else {
+                    console.log('error1')
+                  }
+                }
+              )
+            }
+          })
+        }
       }
-    })
+    )
   })
 }
 
@@ -580,9 +607,9 @@ export function toggleIsLearning(word) {
   })
 }
 
-export function getAllWords() {
+export function getAllWords(query) {
   return new Promise((resolve, reject) => {
-    db.find({ type: 'word' }, (err, res) => {
+    db.find({ type: 'word', ...query }, (err, res) => {
       if (err) {
         reject(err)
       } else {
@@ -592,12 +619,14 @@ export function getAllWords() {
   })
 }
 
-export function saveHistory(words, numsNewWord) {
+export function saveHistory(words, numsNewWord, done) {
   return new Promise((resolve, reject) => {
-    let history = {}
-    history.words = words
-    history.type = 'history'
-    history.timeCompleted = moment(new Date().getTime()).format('DD MM YYYY')
+    let history = {
+      words: words,
+      type: 'history',
+      timeCompleted: utils.getCurrentDate(),
+      done: false
+    }
     db.insert(history, (err, res) => {
       if (err) {
         reject(err)
@@ -609,6 +638,30 @@ export function saveHistory(words, numsNewWord) {
             { $set: { state: Constants.State.LEARNED } }
           )
         }
+      }
+    })
+  })
+}
+
+export function updateHistory(timeCompleted) {
+  return new Promise((resolve, reject) => {
+    db.findOne({ timeCompleted }, (err, lessonInHistory) => {
+      if (lessonInHistory) {
+        db.update({ timeCompleted }, { $set: { done: true } }, (err, res) => {
+          if (err) {
+            reject(err)
+          } else {
+            for (let i in lessonInHistory.words) {
+              let word = lessonInHistory.words[i]
+              db.update(
+                { _id: word._id },
+                { $set: { state: Constants.State.LEARNED } }
+              )
+            }
+          }
+        })
+      } else {
+        console.log('error 2')
       }
     })
   })
@@ -698,9 +751,9 @@ export function removeWord(word) {
   })
 }
 
-export function getHistory() {
+export function getHistory(query) {
   return new Promise((resolve, reject) => {
-    db.find({ type: 'history' }, (err, res) => {
+    db.find({ type: 'history', ...query }, (err, res) => {
       if (err) {
         reject(err)
       } else {

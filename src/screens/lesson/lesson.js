@@ -56,33 +56,32 @@ class Lesson extends React.PureComponent {
     super(props)
     this.state = {
       data: [],
-      textColor: this.props.setting ? this.props.setting.textColor : 'red',
-      isUpperCase: this.props.setting ? this.props.setting.isUpperCase : false,
-      wordCount: this.props.setting.wordCount || '5',
+      textColor: 'red',
+      isUpperCase: false,
+      wordCount: 5,
+      newCount: 1,
       loading: false
     }
   }
 
   async componentWillMount() {
     this.setState({ loading: true })
-    let data = await db.getSetting()
-    this.setState(
-      {
-        textColor: data && data.textColor,
-        isUpperCase: data && data.isUpper,
-        wordCount: data && data.numsWord
-      },
-      () => {
-        this.loadData()
-      }
-    )
-
+    this.setState({
+      textColor: this.props.setting.textColor,
+      isUpperCase: this.props.setting.isUpper,
+      wordCount: this.props.setting.numsWord,
+      newCount: this.props.setting.newCount
+    })
+    this.loadData()
     this.props.navigation.setParams({ onPressEdit: this.onPressEdit })
   }
 
   async loadData() {
     console.log('get today lesson')
-    let data = await db.getTodayLesson(parseInt(this.state.wordCount))
+    let data = await db.getTodayLesson1(
+      parseInt(this.state.wordCount),
+      parseInt(this.state.newCount)
+    )
     console.log('get today lesson done')
     this.setState({ data: data, loading: false })
   }
@@ -131,7 +130,8 @@ class Lesson extends React.PureComponent {
         {
           textColor: nextProps.setting.textColor,
           isUpperCase: nextProps.setting.isUpperCase,
-          wordCount: nextProps.setting.wordCount
+          wordCount: nextProps.setting.wordCount,
+          newCount: nextProps.setting.newCount
         },
         () => {
           this.loadData()

@@ -81,12 +81,10 @@ class TopicDetails extends React.PureComponent {
   }
 
   componentWillMount() {
-    db.getSetting().then(data => {
       this.setState({
-        textColor: data.textColor,
-        isUpperCase: data.isUpper
+        textColor: this.props.setting.textColor,
+        isUpperCase: this.props.setting.isUpper
       })
-    })
     this.loadData()
   }
 

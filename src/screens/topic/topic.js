@@ -55,6 +55,10 @@ class Topic extends React.PureComponent {
   componentWillMount() {
     this.setState({ loading: true })
     this.loadData()
+    this.setState({
+      textColor: this.props.setting.textColor,
+      isUpperCase: this.props.setting.isUpper
+    })
   }
 
   // componentDidMount() {

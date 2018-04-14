@@ -34,6 +34,13 @@ export class TopicItem extends React.PureComponent {
     }
   }
 
+  componentWillMount() {
+    this.setState({
+      textColor: this.props.setting.textColor,
+      isUpperCase: this.props.setting.isUpper
+    })
+  }
+
   componentWillReceiveProps(nextProps) {
     this.setState({
       textColor: nextProps.setting.textColor,
@@ -77,12 +84,6 @@ export class TopicItem extends React.PureComponent {
   }
 
   render() {
-    db.getSetting().then(data => {
-      this.setState({
-        textColor: data.textColor,
-        isUpperCase: data.isUpper
-      })
-    })
     let { data } = this.state
     return (
       <View style={styles.topicItem}>

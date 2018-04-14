@@ -10,7 +10,6 @@ import {
 } from 'react-native'
 import { Permissions, Notifications } from 'expo'
 import Constants from './src/constants/Constants'
-import * as db from './src/db/db'
 import { Provider } from 'react-redux'
 import configureStore from './src/stores/configureStore'
 import RootWithNavigationState from './src/navigator/RootNavigator'
@@ -29,19 +28,11 @@ export default class App extends React.Component {
     super(props)
   }
 
-  componentWillMount() {
+  async componentWillMount() {
     BackHandler.addEventListener('hardwareBackPress', () => {
       return true
     })
 
-    db.getSetting().then(data => {
-      if (!data) {
-        console.log('no data')
-        db.initData()
-      } else {
-        console.log('has data')
-      }
-    })
     register()
   }
 

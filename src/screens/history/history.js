@@ -37,36 +37,27 @@ class History extends React.PureComponent {
       textColor: this.props.setting.textColor || 'red',
       isUpperCase: this.props.setting.isUpperCase || false,
       data: [],
-      loading: false
+      loading: true
     }
-  }
-
-  componentDidMount() {
-    this.setState({
-      textColor: this.props.setting.textColor,
-      isUpperCase: this.props.setting.isUpperCase
-    })
-  }
-
-  loadData = () => {
-    db.getSetting().then(data => {
-      this.setState({
-        textColor: data.textColor,
-        isUpperCase: data.isUpper
-      })
-    })
-    db.getHistory().then(data => {
-      this.setState({ data: data, loading: false })
-    })
   }
 
   componentWillMount() {
     this.setState({ loading: true })
     this.loadData()
+    this.setState({
+      textColor: this.props.setting.textColor,
+      isUpperCase: this.props.setting.isUpper
+    })
+  }
+
+  loadData = () => {
+    db.getHistory({ done: true }).then(data => {
+      this.setState({ data, loading: false })
+    })
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps && nextProps.setting) {
+    if (this.props.setting !== nextProps.setting) {
       this.setState({
         textColor: nextProps.setting.textColor,
         isUpperCase: nextProps.setting.isUpperCase
