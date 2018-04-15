@@ -41,19 +41,18 @@ class History extends React.PureComponent {
     }
   }
 
-  componentWillMount() {
-    this.setState({ loading: true })
-    this.loadData()
+  async componentWillMount() {
     this.setState({
+      loading: true,
       textColor: this.props.setting.textColor,
       isUpperCase: this.props.setting.isUpper
     })
+    await this.onRefresh()
   }
 
-  loadData = () => {
-    db.getHistory({ done: true }).then(data => {
-      this.setState({ data, loading: false })
-    })
+  onRefresh = async () => {
+    let data = await db.getHistory({ done: true })
+    this.setState({ data, loading: false })
   }
 
   componentWillReceiveProps(nextProps) {
@@ -66,14 +65,7 @@ class History extends React.PureComponent {
   }
 
   getListWordToString(words) {
-    let string = ''
-    if (words.length === 0) {
-      return ''
-    }
-    for (var word in words) {
-      string += words[word].text + ', '
-    }
-    return string
+    return words.map(item => item.text).join(', ')
   }
 
   renderItem = ({ item, index }) => {
@@ -126,6 +118,8 @@ class History extends React.PureComponent {
           data={data}
           renderItem={this.renderItem}
           keyExtractor={(item, index) => index.toString()}
+          refreshing={this.state.loading}
+          onRefresh={this.onRefresh}
         />
       </View>
     )

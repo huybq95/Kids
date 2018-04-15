@@ -527,41 +527,74 @@ export function getTodayLesson(numsWord) {
 
 export function getTodayLesson1(numsWord, newCount) {
   return new Promise((resolve, reject) => {
-    //find if today lesson created
-    db.findOne(
-      {
-        type: 'history',
-        timeCompleted: utils.getCurrentDate()
-      },
-      (err, lesson) => {
-        if (lesson) {
-          //lesson created
-          resolve(lesson.words)
-        } else {
-          //if lesson not avaiable, create new lesson: find learning word
-          db.find({ state: Constants.State.LEARNING }, (err, learningWords) => {
-            if (learningWords.length === 0) {
-              //first time run app, no learning words
-              //find random 5 words
-              getAllWords({ state: { $ne: Constants.State.LEARNED } }).then(
-                unlearnWords => {
-                  if (unlearnWords.length >= newCount) {
-                    unlearnWords.sort(() => Math.random() - 0.5)
-                    //get 5 random
-                    unlearnWords = unlearnWords.slice(0, numsWord)
-                    //save to history
-                    saveHistory(unlearnWords, numsWord, false)
-                    resolve(unlearnWords)
-                  } else {
-                    console.log('error1')
-                  }
-                }
-              )
+    //find all history
+    db.find({ state: Constants.State.LEARNING }, (err, learningWords) => {
+      if (err) console.log(err)
+      getHistory().then(allLessons => {
+        if (allLessons.length > 0) {
+          //find if today lesson created?
+          let today = utils.getCurrentDate()
+          let todayLesson = allLessons.find(
+            item => item.timeCompleted === today
+          )
+          if (todayLesson) {
+            //lesson created
+            resolve(todayLesson.words)
+            return
+          } else {
+            //check if last lesson done?
+            let lastLesson = allLessons[allLessons.length - 1]
+            if (!lastLesson.done) {
+              saveHistory(lastLesson.words, false).then(() => {
+                console.log('after save history ')
+                resolve(lastLesson.words)
+                return
+              })
             }
-          })
+          }
         }
-      }
-    )
+        //if lesson not avaiable, create new lesson: find learning word
+        getAllWords({ state: Constants.State.NEW_WORD }).then(unlearnWords => {
+          //shuffle before
+          unlearnWords.sort(() => Math.random() - 0.5)
+
+          //first time run app, no learning words
+          //find random 5 words
+          if (learningWords.length === 0) {
+            if (unlearnWords.length >= newCount) {
+              //get 5 random
+              unlearnWords = unlearnWords.slice(0, numsWord)
+              //save to history
+              saveHistory(unlearnWords, false).then(() => {
+                resolve(unlearnWords)
+              })
+            } else {
+              console.log('error1')
+            }
+          } else {
+            //create new lesson
+            let lastWord = learningWords.pop()
+            //set lastword to state LEARNED
+            updateWord(lastWord._id, {
+              $set: { state: Constants.State.LEARNED }
+            })
+            //add new words
+            //get 5 random
+            unlearnWords = unlearnWords.slice(0, newCount)
+            learningWords.unshift(...unlearnWords)
+            saveHistory(learningWords, false).then(() => {
+              resolve(learningWords)
+            })
+          }
+        })
+      })
+    })
+  })
+}
+
+export function getMausacden() {
+  return new Promise((resolve, reject) => {
+    // db.find({})
   })
 }
 
@@ -619,10 +652,11 @@ export function getAllWords(query) {
   })
 }
 
-export function saveHistory(words, numsNewWord, done) {
+export function saveHistory(words, done) {
   return new Promise((resolve, reject) => {
+    console.log('start save')
     let history = {
-      words: words,
+      words: words.map(item => item._id),
       type: 'history',
       timeCompleted: utils.getCurrentDate(),
       done: false
@@ -631,13 +665,18 @@ export function saveHistory(words, numsNewWord, done) {
       if (err) {
         reject(err)
       } else {
-        for (let i = 0; i < numsNewWord; i++) {
-          let word = history.words[i]
+        if (done)
           db.update(
-            { _id: word._id },
+            { _id: { $in: [words.map(i => i)] } },
             { $set: { state: Constants.State.LEARNED } }
           )
-        }
+        else
+          db.update(
+            { _id: { $in: [words.map(i => i)] } },
+            { $set: { state: Constants.State.LEARNING } }
+          )
+        console.log('end save')
+        resolve()
       }
     })
   })
@@ -651,13 +690,10 @@ export function updateHistory(timeCompleted) {
           if (err) {
             reject(err)
           } else {
-            for (let i in lessonInHistory.words) {
-              let word = lessonInHistory.words[i]
-              db.update(
-                { _id: word._id },
-                { $set: { state: Constants.State.LEARNED } }
-              )
-            }
+            db.update(
+              { _id: { $in: lessonInHistory.words } },
+              { $set: { state: Constants.State.LEARNED } }
+            )
           }
         })
       } else {
@@ -717,25 +753,15 @@ export function createTopic(title) {
   })
 }
 
-export function updateWord(word) {
+export function updateWord(_id, updateQuery) {
   return new Promise((resolve, reject) => {
-    db.update(
-      { _id: word._id },
-      {
-        $set: {
-          text: word.text,
-          recordingPath: word.recordingPath,
-          recordingDuration: word.recordingDuration
-        }
-      },
-      (err, res) => {
-        if (err) {
-          reject(err)
-        } else {
-          resolve(res)
-        }
+    db.update({ _id }, updateQuery, (err, res) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(res)
       }
-    )
+    })
   })
 }
 
@@ -753,12 +779,33 @@ export function removeWord(word) {
 
 export function getHistory(query) {
   return new Promise((resolve, reject) => {
-    db.find({ type: 'history', ...query }, (err, res) => {
+    db.find({ type: 'history', ...query }, (err, lessonList) => {
       if (err) {
         reject(err)
       } else {
-        resolve(res)
+        for (let j in lessonList) {
+          db.find({ _id: { $in: lessonList[j].words } }, (err, words) => {
+            for (let i in lessonList[j].words) {
+              let ww = words.find(item => item._id === lessonList[j].words[i])
+              lessonList[j].words[i] = ww
+            }
+          })
+        }
+        resolve(lessonList)
       }
+    })
+  })
+}
+
+export function getListWordByListId(listId) {
+  return new Promise((resolve, reject) => {
+    db.find({ _id: { $in: listId } }, (err, words) => {
+      if (err) reject(err)
+      let result = []
+      for (let i in listId) {
+        result.push(words.find(item => item._id === listId[i]))
+      }
+      resolve(result)
     })
   })
 }

@@ -81,10 +81,10 @@ class TopicDetails extends React.PureComponent {
   }
 
   componentWillMount() {
-      this.setState({
-        textColor: this.props.setting.textColor,
-        isUpperCase: this.props.setting.isUpper
-      })
+    this.setState({
+      textColor: this.props.setting.textColor,
+      isUpperCase: this.props.setting.isUpper
+    })
     this.loadData()
   }
 
@@ -181,7 +181,13 @@ class TopicDetails extends React.PureComponent {
     word.recordingPath = this.state.recordingPath
     word.recordingDuration = this.state.recordingDuration
     db
-      .updateWord(word)
+      .updateWord(word._id, {
+        $set: {
+          text: word.text,
+          recordingPath: word.recordingPath,
+          recordingDuration: word.recordingDuration
+        }
+      })
       .then(() => {
         this.closeModal()
         this.refs.toast.show('Updated !', DURATION.LENGTH_SHORT)
