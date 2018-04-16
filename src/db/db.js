@@ -575,14 +575,15 @@ export function getTodayLesson1(numsWord, newCount) {
             //create new lesson
             let lastWord = learningWords.pop()
             //set lastword to state LEARNED
-            updateWord(lastWord._id, {
+            let p1 = updateWord(lastWord._id, {
               $set: { state: Constants.State.LEARNED }
             })
             //add new words
             //get 5 random
             unlearnWords = unlearnWords.slice(0, newCount)
             learningWords.unshift(...unlearnWords)
-            saveHistory(learningWords, false).then(() => {
+            let p2 = saveHistory(learningWords, false)
+            Promise.all([p1, p2]).then(() => {
               resolve(learningWords)
             })
           }
@@ -665,18 +666,13 @@ export function saveHistory(words, done) {
       if (err) {
         reject(err)
       } else {
-        if (done)
+        if (!done)
           db.update(
             { _id: { $in: [words.map(i => i)] } },
-            { $set: { state: Constants.State.LEARNED } }
+            { $set: { state: Constants.State.LEARNING } },
+            { multi: true },
+            (err, numReplaced) => resolve()
           )
-        else
-          db.update(
-            { _id: { $in: [words.map(i => i)] } },
-            { $set: { state: Constants.State.LEARNING } }
-          )
-        console.log('end save')
-        resolve()
       }
     })
   })
@@ -686,16 +682,9 @@ export function updateHistory(timeCompleted) {
   return new Promise((resolve, reject) => {
     db.findOne({ timeCompleted }, (err, lessonInHistory) => {
       if (lessonInHistory) {
-        db.update({ timeCompleted }, { $set: { done: true } }, (err, res) => {
-          if (err) {
-            reject(err)
-          } else {
-            db.update(
-              { _id: { $in: lessonInHistory.words } },
-              { $set: { state: Constants.State.LEARNED } }
-            )
-          }
-        })
+        db.update({ timeCompleted }, { $set: { done: true } }, {}, err =>
+          resolve()
+        )
       } else {
         console.log('error 2')
       }
@@ -783,15 +772,22 @@ export function getHistory(query) {
       if (err) {
         reject(err)
       } else {
+        let promiseList = []
         for (let j in lessonList) {
-          db.find({ _id: { $in: lessonList[j].words } }, (err, words) => {
-            for (let i in lessonList[j].words) {
-              let ww = words.find(item => item._id === lessonList[j].words[i])
-              lessonList[j].words[i] = ww
+          let p = db.find(
+            { _id: { $in: lessonList[j].words } },
+            (err, words) => {
+              for (let i in lessonList[j].words) {
+                let ww = words.find(item => item._id === lessonList[j].words[i])
+                lessonList[j].words[i] = ww
+              }
             }
-          })
+          )
+          promiseList.push(p)
         }
-        resolve(lessonList)
+        Promise.all(promiseList).then(() => {
+          resolve(lessonList)
+        })
       }
     })
   })
