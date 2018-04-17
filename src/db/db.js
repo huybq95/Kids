@@ -526,7 +526,7 @@ export function getTodayLesson(numsWord) {
 }
 
 export function getTodayLesson1(numsWord, newCount) {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     //find all history
     db.find({ state: Constants.State.LEARNING }, (err, learningWords) => {
       if (err) console.log(err)
@@ -539,16 +539,21 @@ export function getTodayLesson1(numsWord, newCount) {
           )
           if (todayLesson) {
             //lesson created
-            resolve(todayLesson.words)
-            return
+            let listWords = await getListWordByListId(todayLesson.words)
+            resolve(listWords)
           } else {
             //check if last lesson done?
             let lastLesson = allLessons[allLessons.length - 1]
             if (!lastLesson.done) {
+              //learn last lesson again
               saveHistory(lastLesson.words, false).then(() => {
                 console.log('after save history ')
-                resolve(lastLesson.words)
-                return
+                getListWordByListId(lastLesson.words).then(listWords => {
+                  resolve(listWords)
+                  return
+                   //nnnnnnnn
+                })
+                
               })
             }
           }
@@ -668,7 +673,7 @@ export function saveHistory(words, done) {
       } else {
         if (!done)
           db.update(
-            { _id: { $in: [words.map(i => i)] } },
+            { _id: { $in: words.map(i => i._id) } },
             { $set: { state: Constants.State.LEARNING } },
             { multi: true },
             (err, numReplaced) => resolve()
