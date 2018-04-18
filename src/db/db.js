@@ -2,6 +2,7 @@ import Datastore from 'react-native-local-mongodb'
 import moment from 'moment'
 import * as utils from '../utils'
 import Constants from '../constants/Constants'
+import { Alert } from 'react-native'
 
 var db = new Datastore({ filename: 'myDatabase', autoload: true })
 db.ensureIndex({ fieldName: 'isFirstLaunchApp', unique: true, sparse: true })
@@ -16,7 +17,7 @@ const setting = {
   type: 'setting',
   isUpper: false,
   textColor: 'black',
-  numsWord: 5,
+  wordCount: 5,
   newCount: 1,
   notification: true,
   isAlert: false,
@@ -363,30 +364,18 @@ export function countIsLearning() {
   })
 }
 
-export function getAllTopic() {
-  let topics = []
+export async function getAllTopic() {
   let _topics = []
-  return new Promise((resolve, reject) => {
-    db.findOne({ id: 'topic' }, (err, res) => {
-      if (res.list.length === 0) {
-        reject()
-      }
-      topics = res.list || []
-      db.find({ topic: { $in: res.list } }, (err, res) => {
-        topics.forEach(topic => {
-          let currentTopic = {}
-          currentTopic.title = topic
-          currentTopic.words = []
-          currentTopic.words = res.filter(e => {
-            return e.topic == topic
-          })
-          _topics.push(currentTopic)
-          resolve(_topics)
-          reject(err)
-        })
-      })
-    })
+  let topicList = await findOne({ id: 'topic' })
+  let allWords = await getAllWords({ topic: { $in: topicList.list } })
+  topicList.list.forEach(topic => {
+    let currentTopic = {
+      title: topic,
+      words: allWords.filter(e => e.topic == topic)
+    }
+    _topics.push(currentTopic)
   })
+  return _topics
 }
 
 export function getWordsOfTopic(title) {
@@ -525,77 +514,95 @@ export function getTodayLesson(numsWord) {
   })
 }
 
-export function getTodayLesson1(numsWord, newCount) {
-  return new Promise(async (resolve, reject) => {
-    //find all history
-    db.find({ state: Constants.State.LEARNING }, (err, learningWords) => {
-      if (err) console.log(err)
-      getHistory().then(allLessons => {
-        if (allLessons.length > 0) {
-          //find if today lesson created?
-          let today = utils.getCurrentDate()
-          let todayLesson = allLessons.find(
-            item => item.timeCompleted === today
-          )
-          if (todayLesson) {
-            //lesson created
-            let listWords = await getListWordByListId(todayLesson.words)
-            resolve(listWords)
-          } else {
-            //check if last lesson done?
-            let lastLesson = allLessons[allLessons.length - 1]
-            if (!lastLesson.done) {
-              //learn last lesson again
-              saveHistory(lastLesson.words, false).then(() => {
-                console.log('after save history ')
-                getListWordByListId(lastLesson.words).then(listWords => {
-                  resolve(listWords)
-                  return
-                   //nnnnnnnn
-                })
-                
-              })
-            }
-          }
-        }
-        //if lesson not avaiable, create new lesson: find learning word
-        getAllWords({ state: Constants.State.NEW_WORD }).then(unlearnWords => {
-          //shuffle before
-          unlearnWords.sort(() => Math.random() - 0.5)
-
-          //first time run app, no learning words
-          //find random 5 words
-          if (learningWords.length === 0) {
-            if (unlearnWords.length >= newCount) {
-              //get 5 random
-              unlearnWords = unlearnWords.slice(0, numsWord)
-              //save to history
-              saveHistory(unlearnWords, false).then(() => {
-                resolve(unlearnWords)
-              })
-            } else {
-              console.log('error1')
-            }
-          } else {
-            //create new lesson
-            let lastWord = learningWords.pop()
-            //set lastword to state LEARNED
-            let p1 = updateWord(lastWord._id, {
-              $set: { state: Constants.State.LEARNED }
-            })
-            //add new words
-            //get 5 random
-            unlearnWords = unlearnWords.slice(0, newCount)
-            learningWords.unshift(...unlearnWords)
-            let p2 = saveHistory(learningWords, false)
-            Promise.all([p1, p2]).then(() => {
-              resolve(learningWords)
-            })
-          }
-        })
-      })
+export function find(query) {
+  return new Promise((resolve, reject) => {
+    db.find(query, (err, docs) => {
+      if (err) resolve({ err })
+      else resolve(docs)
     })
   })
+}
+
+export function findOne(query) {
+  return new Promise((resolve, reject) => {
+    db.findOne(query, (err, docs) => {
+      if (err) resolve({ err })
+      else resolve(docs)
+    })
+  })
+}
+
+export function insert(query) {
+  return new Promise((resolve, reject) => {
+    db.insert(query, (err, docs) => {
+      if (err) resolve({ err })
+      else resolve(docs)
+    })
+  })
+}
+
+export function update(query, update, option) {
+  return new Promise((resolve, reject) => {
+    db.update(query, update, option, (err, num) => {
+      if (err) resolve({ err })
+      else resolve(num)
+    })
+  })
+}
+
+export async function getTodayLesson1(numsWord, newCount) {
+  //find all history
+  let learningWords = await find({ state: Constants.State.LEARNING })
+  let allLessons = await getHistory()
+  if (allLessons.length > 0) {
+    //find if today lesson created?
+    let today = utils.getCurrentDate()
+    let todayLesson = allLessons.find(item => item.timeCompleted === today)
+    if (todayLesson) {
+      //lesson created
+      return todayLesson.words
+    } else {
+      //check if last lesson done?
+      let lastLesson = allLessons[allLessons.length - 1]
+      if (!lastLesson.done) {
+        //learn last lesson again
+        await saveHistory(lastLesson.words, false)
+        return lastLesson.words
+      }
+    }
+  }
+
+  //if lesson not avaiable, create new lesson: find learning word
+  let unlearnWords = await getAllWords({ state: Constants.State.NEW_WORD })
+  //shuffle before
+  unlearnWords.sort(() => Math.random() - 0.5)
+
+  //first time run app, no learning words
+  //find random 5 words
+  if (learningWords.length === 0) {
+    if (unlearnWords.length >= newCount) {
+      //get 5 random
+      unlearnWords = unlearnWords.slice(0, numsWord)
+      //save to history
+      await saveHistory(unlearnWords, false)
+      return unlearnWords
+    } else {
+      console.log('error1')
+    }
+  } else {
+    //create new lesson
+    let lastWord = learningWords.pop()
+    //set lastword to state LEARNED
+    await updateWord(lastWord._id, {
+      $set: { state: Constants.State.LEARNED }
+    })
+    //add new words
+    //get 5 random
+    unlearnWords = unlearnWords.slice(0, newCount)
+    learningWords.unshift(...unlearnWords)
+    await saveHistory(learningWords, false)
+    return learningWords
+  }
 }
 
 export function getMausacden() {
@@ -604,30 +611,8 @@ export function getMausacden() {
   })
 }
 
-export function toggleIsComplete(word) {
-  return new Promise((resolve, reject) => {
-    db.update(
-      { _id: word._id },
-      { $set: { isCompleted: !word.isCompleted } },
-      (err, res) => {
-        if (err) {
-          reject(err)
-        } else {
-          db.update(
-            { _id: word._id },
-            { $set: { isLearning: true } },
-            (err, res) => {
-              if (err) {
-                reject(err)
-              } else {
-                resolve(res)
-              }
-            }
-          )
-        }
-      }
-    )
-  })
+export async function toggleLearned(wordId) {
+  await update({ _id: wordId }, { $set: { state: Constants.State.LEARNING } })
 }
 
 export function toggleIsLearning(word) {
@@ -646,41 +631,24 @@ export function toggleIsLearning(word) {
   })
 }
 
-export function getAllWords(query) {
-  return new Promise((resolve, reject) => {
-    db.find({ type: 'word', ...query }, (err, res) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(res)
-      }
-    })
-  })
+export async function getAllWords(query) {
+  return await find({ type: 'word', ...query })
 }
 
-export function saveHistory(words, done) {
-  return new Promise((resolve, reject) => {
-    console.log('start save')
-    let history = {
-      words: words.map(item => item._id),
-      type: 'history',
-      timeCompleted: utils.getCurrentDate(),
-      done: false
-    }
-    db.insert(history, (err, res) => {
-      if (err) {
-        reject(err)
-      } else {
-        if (!done)
-          db.update(
-            { _id: { $in: words.map(i => i._id) } },
-            { $set: { state: Constants.State.LEARNING } },
-            { multi: true },
-            (err, numReplaced) => resolve()
-          )
-      }
-    })
-  })
+export async function saveHistory(words, done) {
+  let history = {
+    words: words.map(item => item._id),
+    type: 'history',
+    timeCompleted: utils.getCurrentDate(),
+    done: false
+  }
+  await insert(history)
+  if (!done)
+    await update(
+      { _id: { $in: words.map(i => i._id) } },
+      { $set: { state: Constants.State.LEARNING } },
+      { multi: true }
+    )
 }
 
 export function updateHistory(timeCompleted) {
@@ -771,42 +739,34 @@ export function removeWord(word) {
   })
 }
 
-export function getHistory(query) {
-  return new Promise((resolve, reject) => {
-    db.find({ type: 'history', ...query }, (err, lessonList) => {
-      if (err) {
-        reject(err)
-      } else {
-        let promiseList = []
-        for (let j in lessonList) {
-          let p = db.find(
-            { _id: { $in: lessonList[j].words } },
-            (err, words) => {
-              for (let i in lessonList[j].words) {
-                let ww = words.find(item => item._id === lessonList[j].words[i])
-                lessonList[j].words[i] = ww
-              }
-            }
-          )
-          promiseList.push(p)
-        }
-        Promise.all(promiseList).then(() => {
-          resolve(lessonList)
-        })
+export async function getHistory(query) {
+  let lessonList = await find({ type: 'history', ...query })
+  if (lessonList.err) {
+    console.log(lessonList.err)
+  } else {
+    let promiseList = []
+    for (let j in lessonList) {
+      let words = await find({ _id: { $in: lessonList[j].words } })
+      for (let i in lessonList[j].words) {
+        lessonList[j].words[i] = words.find(
+          item => item._id === lessonList[j].words[i]
+        )
       }
-    })
-  })
+    }
+    return lessonList
+  }
 }
 
-export function getListWordByListId(listId) {
-  return new Promise((resolve, reject) => {
-    db.find({ _id: { $in: listId } }, (err, words) => {
-      if (err) reject(err)
-      let result = []
-      for (let i in listId) {
-        result.push(words.find(item => item._id === listId[i]))
-      }
-      resolve(result)
-    })
-  })
+export async function getListWordByListId(listId) {
+  let words = await find({ _id: { $in: listId } })
+  let result = []
+  for (let i in listId) {
+    result.push(words.find(item => item._id === listId[i]))
+  }
+  return result
+}
+
+function alert(err) {
+  console.log(err)
+  Alert.alert('Error', JSON.stringify(err))
 }

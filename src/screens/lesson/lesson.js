@@ -88,12 +88,7 @@ class Lesson extends React.PureComponent {
   }
 
   onPressEdit = () => {
-    if (!this.props.learnedToday)
-      this.props.navigation.navigate('LessonEdit', {
-        data: this.state.data,
-        counter: this.state.wordCount,
-        loadData: this.loadData.bind(this)
-      })
+    if (!this.props.learnedToday) this.props.navigation.navigate('LessonEdit')
   }
 
   convertTime(time) {
