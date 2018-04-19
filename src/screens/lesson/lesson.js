@@ -73,7 +73,7 @@ class Lesson extends React.PureComponent {
       wordCount: this.props.setting.numsWord,
       newCount: this.props.setting.newCount
     })
-    // this.loadData()
+    await this.loadData()
     this.props.navigation.setParams({ onPressEdit: this.onPressEdit })
   }
 
@@ -88,7 +88,11 @@ class Lesson extends React.PureComponent {
   }
 
   onPressEdit = () => {
-    if (!this.props.learnedToday) this.props.navigation.navigate('LessonEdit')
+    if (!this.props.learnedToday) {
+      this.props.navigation.navigate('LessonEdit', {
+        onGoBack: () => this.loadData()
+      })
+    }
   }
 
   convertTime(time) {

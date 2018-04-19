@@ -52,6 +52,7 @@ class History extends React.PureComponent {
 
   onRefresh = async () => {
     let data = await db.getHistory({ done: true })
+    data.reverse()
     this.setState({ data, loading: false })
   }
 

@@ -15,7 +15,10 @@ import Ionicons from '@expo/vector-icons/Ionicons'
 import { connect } from 'react-redux'
 import * as db from '../../db/db'
 import Constants from '../../constants/Constants'
+import * as AppStateActions from '../../stores/appState/actions'
 
+let beginList = []
+const { LEARNING, LEARNED, NEW_WORD } = Constants.State
 class LessonEdit extends React.PureComponent {
   static navigationOptions = ({ navigation }) => {
     const params = navigation.state.params || {}
@@ -49,13 +52,46 @@ class LessonEdit extends React.PureComponent {
       learning: 0,
       textColor: this.props.setting.textColor || 'red',
       isUpperCase: this.props.setting.isUpperCase || false,
-      loading: true
+      loading: true,
+      data: []
     }
   }
 
-  onClickSave = () => {
+  onClickSave = async () => {
+    if (this.state.learning < this.state.wordCount) {
+      Alert.alert('Lỗi', 'Bạn chưa chọn đủ ' + this.state.wordCount + ' từ')
+      return
+    }
+
+    this.props.showHideLoading(true, 'Đang cập nhật bài học...')
+    let { data } = this.state
+    let updateToLearning = []
+    let updateToNewWord = []
+    for (let i in data) {
+      for (let j in data[i].words) {
+        let currentWord = data[i].words[j]
+        if (currentWord.state !== beginList[i].words[j].state) {
+          if (
+            beginList[i].words[j].state === LEARNING &&
+            currentWord.state === NEW_WORD
+          )
+            updateToNewWord.push(currentWord._id)
+          else if (
+            beginList[i].words[j].state === NEW_WORD &&
+            currentWord.state === LEARNING
+          )
+            updateToLearning.push(currentWord._id)
+        }
+      }
+    }
+    //update word
+    await db.updateLearningWord(updateToNewWord, NEW_WORD)
+    await db.updateLearningWord(updateToLearning, LEARNING)
+
+    this.props.showHideLoading(false)
+    this.props.navigation.state.params.onGoBack()
     this.props.navigation.goBack()
-    this.props.navigation.state.params.loadData()
+    // this.props.navigation.state.params.loadData()
   }
 
   async componentWillMount() {
@@ -71,6 +107,7 @@ class LessonEdit extends React.PureComponent {
     //   this.setState({ counter: data })
     // })
     let data = await db.getAllTopic()
+    beginList = JSON.parse(JSON.stringify(data))
     this.setState({ data, loading: false })
     this.toggleLearned()
   }
@@ -97,7 +134,7 @@ class LessonEdit extends React.PureComponent {
       for (let j in data[i].words) {
         let c = data[i].words[j]
         if (c._id === id) data[i].words[j].state = toState
-        if (c.state === Constants.State.LEARNING) learning++
+        if (c.state === LEARNING) learning++
       }
     }
     this.setState({ data, learning })
@@ -108,29 +145,29 @@ class LessonEdit extends React.PureComponent {
 
   toggleIsLearningState(word) {
     switch (word.state) {
-      case Constants.State.NEW_WORD:
+      case NEW_WORD:
         if (this.state.learning < this.state.wordCount)
-          this.toggleLearned(word._id, Constants.State.LEARNING)
+          this.toggleLearned(word._id, LEARNING)
         break
-      case Constants.State.LEARNED:
-        Alert.alert(
-          'Từ này đã học rồi!',
-          'Bạn có muốn học lại từ này ?',
-          [
-            {
-              text: 'Không'
-            },
-            {
-              text: 'Có',
-              onPress: () =>
-                this.toggleLearned(word._id, Constants.State.LEARNING)
-            }
-          ],
-          { cancelable: false }
-        )
+      case LEARNED:
+        if (this.state.learning < this.state.wordCount)
+          Alert.alert(
+            'Từ này đã học rồi!',
+            'Bạn có muốn học lại từ này ?',
+            [
+              {
+                text: 'Không'
+              },
+              {
+                text: 'Có',
+                onPress: () => this.toggleLearned(word._id, LEARNING)
+              }
+            ],
+            { cancelable: false }
+          )
         break
-      case Constants.State.LEARNING:
-        this.toggleLearned(word._id, Constants.State.NEW_WORD)
+      case LEARNING:
+        this.toggleLearned(word._id, NEW_WORD)
     }
 
     // db.toggleIsLearning(word).then(() => {
@@ -173,7 +210,7 @@ class LessonEdit extends React.PureComponent {
             padding: 10
           }}
         >
-          {`${item.title}`}
+          {item.title}
         </Text>
         <View style={{ padding: 16 }}>
           <FlatList
@@ -199,11 +236,10 @@ class LessonEdit extends React.PureComponent {
           style={{
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor:
-              item.state === Constants.State.LEARNED ? '#e7e5e5' : 'white'
+            backgroundColor: item.state === LEARNED ? '#e7e5e5' : 'white'
           }}
         >
-          {item.state === Constants.State.LEARNING ? (
+          {item.state === LEARNING ? (
             <Ionicons
               style={{
                 position: 'absolute',
@@ -230,7 +266,14 @@ function mapStateToProps(state, ownProps) {
   }
 }
 
-export default connect(mapStateToProps)(LessonEdit)
+function mapDispatchToProps(dispatch) {
+  return {
+    showHideLoading: (visible, message) =>
+      dispatch(AppStateActions.showHideLoading(visible, message))
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(LessonEdit)
 
 const styles = StyleSheet.create({
   container: {

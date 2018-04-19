@@ -770,3 +770,11 @@ function alert(err) {
   console.log(err)
   Alert.alert('Error', JSON.stringify(err))
 }
+
+export async function updateLearningWord(updateList, toState) {
+  await update(
+    { _id: { $in: updateList } },
+    { $set: { state: toState } },
+    { multi: true }
+  )
+}
