@@ -7,12 +7,14 @@ import {
   FlatList,
   Dimensions,
   Platform,
-  Alert
+  Alert,
+  ActivityIndicator
 } from 'react-native'
 import { Card, CardItem } from 'native-base'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { connect } from 'react-redux'
 import * as db from '../../db/db'
+import Constants from '../../constants/Constants'
 
 class LessonEdit extends React.PureComponent {
   static navigationOptions = ({ navigation }) => {
@@ -43,11 +45,11 @@ class LessonEdit extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {
-      words: [],
-      wordCount: parseInt(this.props.navigation.state.params.counter),
-      counter: 0,
+      wordCount: 0,
+      learning: 0,
       textColor: this.props.setting.textColor || 'red',
-      isUpperCase: this.props.setting.isUpperCase || false
+      isUpperCase: this.props.setting.isUpperCase || false,
+      loading: true
     }
   }
 
@@ -56,26 +58,28 @@ class LessonEdit extends React.PureComponent {
     this.props.navigation.state.params.loadData()
   }
 
-  componentWillMount() {
+  async componentWillMount() {
     this.props.navigation.setParams({
-      title: 'Số từ: ' + this.state.counter + '/' + this.state.wordCount,
       onClickSave: this.onClickSave
     })
-
-      this.setState({
-        textColor: this.props.setting.textColor,
-        isUpperCase: this.props.setting.isUpper,
-        wordCount: this.props.setting.numsWord
-      })
-    db.countIsLearning().then(data => {
-      this.setState({ counter: data })
+    this.setState({
+      textColor: this.props.setting.textColor,
+      isUpperCase: this.props.setting.isUpper,
+      wordCount: this.props.setting.wordCount
     })
-    setInterval(() => {
-      db.getAllTopic().then(data => {
-        this.setState({ data: data })
-      })
-    }, 500)
+    // db.countIsLearning().then(data => {
+    //   this.setState({ counter: data })
+    // })
+    let data = await db.getAllTopic()
+    this.setState({ data, loading: false })
+    this.toggleLearned()
   }
+
+  // updateWordCount() {
+  //   this.props.navigation.setParams({
+  //     title: 'Số từ: ' + selectedWordIds.length + '/' + this.state.wordCount
+  //   })
+  // }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.setting !== this.props.setting) {
@@ -86,77 +90,74 @@ class LessonEdit extends React.PureComponent {
     }
   }
 
-  toggleIsLearningState(word) {
-    if (
-      this.state.counter === this.state.wordCount &&
-      word.isLearning === false
-    ) {
-      return
+  toggleLearned(id, toState) {
+    let { data } = this.state
+    let learning = 0
+    for (let i in data) {
+      for (let j in data[i].words) {
+        let c = data[i].words[j]
+        if (c._id === id) data[i].words[j].state = toState
+        if (c.state === Constants.State.LEARNING) learning++
+      }
     }
-
-    if (word.isCompleted) {
-      Alert.alert(
-        'Bạn có muốn học lại từ này ?',
-        '',
-        [
-          {
-            text: 'Không',
-            onPress: () => {
-              return
-            }
-          },
-          { text: 'Có', onPress: () => db.toggleIsComplete(word) }
-        ],
-        { cancelable: false }
-      )
-    }
-
-    db.toggleIsLearning(word).then(() => {
-      db.countIsLearning().then(data => {
-        this.setState({ counter: data })
-      })
+    this.setState({ data, learning })
+    this.props.navigation.setParams({
+      title: 'Số từ: ' + learning + '/' + this.state.wordCount
     })
   }
 
+  toggleIsLearningState(word) {
+    switch (word.state) {
+      case Constants.State.NEW_WORD:
+        if (this.state.learning < this.state.wordCount)
+          this.toggleLearned(word._id, Constants.State.LEARNING)
+        break
+      case Constants.State.LEARNED:
+        Alert.alert(
+          'Từ này đã học rồi!',
+          'Bạn có muốn học lại từ này ?',
+          [
+            {
+              text: 'Không'
+            },
+            {
+              text: 'Có',
+              onPress: () =>
+                this.toggleLearned(word._id, Constants.State.LEARNING)
+            }
+          ],
+          { cancelable: false }
+        )
+        break
+      case Constants.State.LEARNING:
+        this.toggleLearned(word._id, Constants.State.NEW_WORD)
+    }
+
+    // db.toggleIsLearning(word).then(() => {
+    //   db.countIsLearning().then(data => {
+    //     this.setState({ counter: data })
+    //   })
+    // })
+  }
+
   render() {
-    let { data, counter, max, wordCount } = this.state
+    let { data, counter, max, wordCount, loading } = this.state
+    if (loading)
+      return (
+        <View
+          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+        >
+          <ActivityIndicator />
+        </View>
+      )
     return (
       <View style={styles.container}>
-        {/* <View
-          style={{
-            height: Platform.OS === 'ios' ? 76 : 56,
-            backgroundColor: 'red',
-            alignItems: 'center',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            padding: 16
-          }}
-        >
-          <Text
-            style={{
-              marginTop: Platform.OS === 'ios' ? 20 : 0,
-              fontSize: 24,
-              color: 'white'
-            }}
-          >{`Số từ: ${counter} / ${wordCount}`}</Text>
-          <TouchableOpacity
-            onPress={() => {
-              this.props.navigation.goBack()
-              this.props.navigation.state.params.loadData()
-            }}
-            style={{ marginTop: Platform.OS === 'ios' ? 20 : 0 }}
-          >
-            <Text style={{ fontSize: 24, color: 'white' }}>Lưu</Text>
-          </TouchableOpacity>
-        </View> */}
-        {
-          <FlatList
-            keyExtractor={(item, index) => index.toString()}
-            extraData={this.state}
-            data={data}
-            renderItem={this.renderTopicList}
-          />
-        }
+        <FlatList
+          keyExtractor={(item, index) => index.toString()}
+          extraData={this.state}
+          data={data}
+          renderItem={this.renderTopicList}
+        />
       </View>
     )
   }
@@ -198,10 +199,11 @@ class LessonEdit extends React.PureComponent {
           style={{
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: item.isCompleted ? '#fcfcfc' : 'white'
+            backgroundColor:
+              item.state === Constants.State.LEARNED ? '#e7e5e5' : 'white'
           }}
         >
-          {item.isLearning ? (
+          {item.state === Constants.State.LEARNING ? (
             <Ionicons
               style={{
                 position: 'absolute',
