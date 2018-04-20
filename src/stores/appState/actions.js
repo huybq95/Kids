@@ -4,10 +4,10 @@ import Constants from '../../constants/Constants'
 
 export const checkLearnedToday = () => {
   return async dispatch => {
-    let learnedToday = await AsyncStorage.getItem(Constants.StorageKey.LEARNED)
+    let lastSaveDay = await AsyncStorage.getItem(Constants.StorageKey.LEARNED)
     dispatch({
       type: types.SET_LEARNED_TODAY,
-      learnedToday
+      lastSaveDay
     })
   }
 }

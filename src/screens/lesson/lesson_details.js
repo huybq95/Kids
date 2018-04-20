@@ -108,7 +108,10 @@ export class LessonDetails extends React.PureComponent {
   async onLearnComplete() {
     if (!this.props.learnedToday) {
       await db.updateHistory(utils.getCurrentDate())
-      await AsyncStorage.setItem(Constants.StorageKey.LEARNED, 'true')
+      await AsyncStorage.setItem(
+        Constants.StorageKey.LEARNED,
+        utils.getCurrentDate()
+      )
       this.props.checkLearnedToday()
     }
   }
