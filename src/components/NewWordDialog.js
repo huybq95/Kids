@@ -114,20 +114,21 @@ export default class NewWordDialog extends Component {
                         />
                         <Text>Nghe phát âm</Text>
                       </TouchableOpacity>
-                      {isEditing && (
-                        <TouchableOpacity
-                          onPress={removeWord}
-                          style={{ flexDirection: 'row', alignItems: 'center' }}
-                        >
-                          <Ionicons
-                            style={{ padding: 20 }}
-                            name="ios-trash"
-                            color={isRecording ? '#ffbfbf' : 'red'}
-                            size={38}
-                          />
-                          <Text>Xóa</Text>
-                        </TouchableOpacity>
-                      )}
+                      <TouchableOpacity
+                        style={{ flexDirection: 'row', alignItems: 'center' }}
+                        onPress={onPressRecord}
+                      >
+                        <Ionicons
+                          style={{ padding: 20 }}
+                          name={isRecording ? 'md-square' : 'ios-mic'}
+                          color="red"
+                          size={38}
+                        />
+                        <Text>Thu âm</Text>
+                        <Text style={{ paddingHorizontal: 10 }}>
+                          {duration}
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                     <View
                       style={{
@@ -147,21 +148,20 @@ export default class NewWordDialog extends Component {
                         />
                         <Text>Nghe thu âm</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity
-                        style={{ flexDirection: 'row', alignItems: 'center' }}
-                        onPress={onPressRecord}
-                      >
-                        <Ionicons
-                          style={{ padding: 20 }}
-                          name={isRecording ? 'md-square' : 'ios-mic'}
-                          color="red"
-                          size={38}
-                        />
-                        <Text>Thu âm</Text>
-                        <Text style={{ paddingHorizontal: 10 }}>
-                          {duration}
-                        </Text>
-                      </TouchableOpacity>
+                      {isEditing && (
+                        <TouchableOpacity
+                          onPress={removeWord}
+                          style={{ flexDirection: 'row', alignItems: 'center' }}
+                        >
+                          <Ionicons
+                            style={{ padding: 20 }}
+                            name="ios-trash"
+                            color={isRecording ? '#ffbfbf' : 'red'}
+                            size={38}
+                          />
+                          <Text>Xóa</Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
                   </View>
                 )}

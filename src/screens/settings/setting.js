@@ -22,7 +22,7 @@ import * as AppStateActions from '../../stores/appState/actions'
 import moment from 'moment'
 // import {Notifications} from 'expo';
 
-const NUMBERS_LIST = [5, 10, 15, 20, 25]
+const NUMBERS_LIST = [1, 2, 3, 4, 5, 10, 15, 20, 25]
 const NEW_LIST = [1, 2, 3, 4, 5]
 
 import * as db from './../../db/db'
@@ -49,8 +49,8 @@ class Setting extends React.PureComponent {
         textColor: 'red',
         wordCount: '5',
         newCount: '1',
-        isAlert: false,
-        isManual: true,
+        isAlert: true,
+        isManual: false,
         timeShow: 1000,
         alerts: [
           {
