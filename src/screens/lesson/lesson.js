@@ -25,7 +25,6 @@ import Constants from '../../constants/Constants'
 const WIDTH = (Dimensions.get('window').width - 56) / 3
 const HEIGHT = (Dimensions.get('window').height - 300) / 5
 
-// action chỉ để Học còn Sửa để góc trên bên phải ngang với title
 class Lesson extends React.PureComponent {
   static navigationOptions = ({ navigation }) => {
     const params = navigation.state.params || {}
@@ -35,7 +34,7 @@ class Lesson extends React.PureComponent {
       headerRight: (
         <Entypo
           name="edit"
-          color={params.learnedToday ? '#999999' : 'white'}
+          color={params.learnedToday ? '#ebebeb' : 'white'}
           size={30}
           style={{ paddingHorizontal: 20 }}
           onPress={params.onPressEdit}

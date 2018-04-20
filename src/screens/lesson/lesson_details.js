@@ -36,7 +36,7 @@ export class LessonDetails extends React.PureComponent {
   componentWillMount() {
     let { setting } = this.props
     this.setState({
-      autoplay: !setiing.isManual,
+      autoplay: !setting.isManual,
       autoplayTimeout: setting.timeShow
     })
 
@@ -171,7 +171,7 @@ export class LessonDetails extends React.PureComponent {
                       }
                     ]}
                   >
-                    <Text style={{ color: this.state.textColor, fontSize: 56 }}>
+                    <Text style={{ color: this.state.textColor, fontSize: 100 }}>
                       {this.state.isUpperCase
                         ? `${item.text}`.toUpperCase()
                         : `${item.text}`}

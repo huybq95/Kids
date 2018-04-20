@@ -26,7 +26,7 @@ class ProcessingPrompt extends Component {
             justifyContent: 'center',
             alignItems: 'center',
             flex: 1,
-            backgroundColor: '#69696969'
+            backgroundColor: 'white'
           }}
         >
           <View
