@@ -541,7 +541,7 @@ export function insert(query) {
   })
 }
 
-export function update(query, update, option) {
+export function update(query, update, option = {}) {
   return new Promise((resolve, reject) => {
     db.update(query, update, option, (err, num) => {
       if (err) resolve({ err })
@@ -776,5 +776,12 @@ export async function updateLearningWord(updateList, toState) {
     { _id: { $in: updateList } },
     { $set: { state: toState } },
     { multi: true }
+  )
+}
+
+export async function updateWordLesson(timeCompleted, wordListId) {
+  await update(
+    { timeCompleted, type: 'history' },
+    { $set: { words: wordListId } }
   )
 }

@@ -16,6 +16,7 @@ import { connect } from 'react-redux'
 import * as db from '../../db/db'
 import Constants from '../../constants/Constants'
 import * as AppStateActions from '../../stores/appState/actions'
+import * as utils from '../../utils'
 
 let beginList = []
 const { LEARNING, LEARNED, NEW_WORD } = Constants.State
@@ -67,9 +68,11 @@ class LessonEdit extends React.PureComponent {
     let { data } = this.state
     let updateToLearning = []
     let updateToNewWord = []
+    let learningList = []
     for (let i in data) {
       for (let j in data[i].words) {
         let currentWord = data[i].words[j]
+        if (currentWord.state === LEARNING) learningList.push(currentWord._id)
         if (currentWord.state !== beginList[i].words[j].state) {
           if (
             beginList[i].words[j].state === LEARNING &&
@@ -87,6 +90,7 @@ class LessonEdit extends React.PureComponent {
     //update word
     await db.updateLearningWord(updateToNewWord, NEW_WORD)
     await db.updateLearningWord(updateToLearning, LEARNING)
+    await db.updateWordLesson(utils.getCurrentDate(), learningList)
 
     this.props.showHideLoading(false)
     this.props.navigation.state.params.onGoBack()
