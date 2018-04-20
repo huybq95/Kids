@@ -76,7 +76,7 @@ const words = [
     lesson: null,
     text: 'vàng',
     key: 'Màu sắc vàng',
-    state: Constants.State.LEARNED,
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {
@@ -85,7 +85,7 @@ const words = [
     lesson: null,
     text: 'nâu',
     key: 'Màu sắc nâu',
-    state: Constants.State.LEARNED,
+    state: Constants.State.NEW_WORD,
     updated: new Date().getTime()
   },
   {

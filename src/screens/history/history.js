@@ -13,6 +13,7 @@ import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import { Card, CardItem } from 'native-base'
 import * as db from '../../db/db'
+import Constants from '../../constants/Constants'
 
 class History extends React.PureComponent {
   static navigationOptions = ({ navigation }) => {
@@ -37,13 +38,12 @@ class History extends React.PureComponent {
       textColor: this.props.setting.textColor || 'red',
       isUpperCase: this.props.setting.isUpperCase || false,
       data: [],
-      loading: true
+      loading: false
     }
   }
 
   async componentWillMount() {
     this.setState({
-      loading: true,
       textColor: this.props.setting.textColor,
       isUpperCase: this.props.setting.isUpper
     })
@@ -51,6 +51,7 @@ class History extends React.PureComponent {
   }
 
   onRefresh = async () => {
+    this.setState({ loading: true })
     let data = await db.getHistory({ done: true })
     data.reverse()
     this.setState({ data, loading: false })
@@ -104,17 +105,31 @@ class History extends React.PureComponent {
           <ActivityIndicator />
         </View>
       )
-    if (data.length == 0)
-      return (
-        <View
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-        >
-          <Text>Bạn chưa học bài nào!</Text>
-        </View>
-      )
+    // if (data.length == 0)
+    //   return (
+    //     <View
+    //       style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+    //     >
+    //       <Text>Bạn chưa học bài nào!</Text>
+    //     </View>
+    //   )
 
     return (
       <View style={{ flex: 1 }}>
+        {this.state.data.length === 0 && (
+          <Text
+            style={{
+              position: 'absolute',
+              flex: 1,
+              top: 50,
+              width: 160,
+              left: Constants.screen.width / 2 - 80,
+              textAlign: 'center'
+            }}
+          >
+            Bạn chưa học bài nào!
+          </Text>
+        )}
         <FlatList
           data={data}
           renderItem={this.renderItem}
