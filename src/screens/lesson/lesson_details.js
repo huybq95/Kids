@@ -74,7 +74,6 @@ export class LessonDetails extends React.PureComponent {
   async speech() {
     let item = this.props.navigation.state.params.data[this.state.index]
 
-    console.log('speech item ', item, this.state.index)
     if (item && item.recordingPath && item.recordingDuration) {
       this.sound = new Audio.Sound()
       this.setState({ recordingDuration: item.recordingDuration })
@@ -94,26 +93,30 @@ export class LessonDetails extends React.PureComponent {
     this.setState({ index: this.state.index + 1 }, async () => {
       if (this.state.index === this.numsWord) {
         //end
-        console.log('end word ')
+        console.log('learn : end')
         await this.onLearnComplete()
         this.props.navigation.goBack()
       } else {
-        if (!this.state.mute) this.speech()
+        if (!this.state.mute) {
+          this.speech()
+          console.log('learn: speech', this.state.data[index])
+        }
       }
     })
   }
 
   async onLearnComplete() {
     if (!this.props.learnedToday) {
-      console.log('update to history', this.state.data)
-      db.updateHistory(utils.getCurrentDate())
-      await AsyncStorage.setItem(Constants.StorageKey.LEARNED, 'true')
+      await db.updateHistory(utils.getCurrentDate())
+      await AsyncStorage.setItem(
+        Constants.StorageKey.LEARNED,
+        utils.getCurrentDate()
+      )
       this.props.checkLearnedToday()
     }
   }
 
   render() {
-    console.log('render ', this.state.autoplay)
     let { width, height } = Constants.screen
     let marginTop = width / 12
     width = (width < height ? width : height) * 5 / 6

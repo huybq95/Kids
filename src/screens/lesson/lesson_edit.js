@@ -7,13 +7,19 @@ import {
   FlatList,
   Dimensions,
   Platform,
-  Alert
+  Alert,
+  ActivityIndicator
 } from 'react-native'
 import { Card, CardItem } from 'native-base'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { connect } from 'react-redux'
 import * as db from '../../db/db'
+import Constants from '../../constants/Constants'
+import * as AppStateActions from '../../stores/appState/actions'
+import * as utils from '../../utils'
 
+let beginList = []
+const { LEARNING, LEARNED, NEW_WORD } = Constants.State
 class LessonEdit extends React.PureComponent {
   static navigationOptions = ({ navigation }) => {
     const params = navigation.state.params || {}
@@ -43,39 +49,78 @@ class LessonEdit extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {
-      words: [],
-      wordCount: parseInt(this.props.navigation.state.params.counter),
-      counter: 0,
+      wordCount: 0,
+      learning: 0,
       textColor: this.props.setting.textColor || 'red',
-      isUpperCase: this.props.setting.isUpperCase || false
+      isUpperCase: this.props.setting.isUpperCase || false,
+      loading: true,
+      data: []
     }
   }
 
-  onClickSave = () => {
+  onClickSave = async () => {
+    if (this.state.learning < this.state.wordCount) {
+      Alert.alert('Lỗi', 'Bạn chưa chọn đủ ' + this.state.wordCount + ' từ')
+      return
+    }
+
+    this.props.showHideLoading(true, 'Đang cập nhật bài học...')
+    let { data } = this.state
+    let updateToLearning = []
+    let updateToNewWord = []
+    let learningList = []
+    for (let i in data) {
+      for (let j in data[i].words) {
+        let currentWord = data[i].words[j]
+        if (currentWord.state === LEARNING) learningList.push(currentWord._id)
+        if (currentWord.state !== beginList[i].words[j].state) {
+          if (
+            beginList[i].words[j].state === LEARNING &&
+            currentWord.state === NEW_WORD
+          )
+            updateToNewWord.push(currentWord._id)
+          else if (
+            beginList[i].words[j].state === NEW_WORD &&
+            currentWord.state === LEARNING
+          )
+            updateToLearning.push(currentWord._id)
+        }
+      }
+    }
+    //update word
+    await db.updateLearningWord(updateToNewWord, NEW_WORD)
+    await db.updateLearningWord(updateToLearning, LEARNING)
+    await db.updateWordLesson(utils.getCurrentDate(), learningList)
+
+    this.props.showHideLoading(false)
+    this.props.navigation.state.params.onGoBack()
     this.props.navigation.goBack()
-    this.props.navigation.state.params.loadData()
+    // this.props.navigation.state.params.loadData()
   }
 
-  componentWillMount() {
+  async componentWillMount() {
     this.props.navigation.setParams({
-      title: 'Số từ: ' + this.state.counter + '/' + this.state.wordCount,
       onClickSave: this.onClickSave
     })
-
-      this.setState({
-        textColor: this.props.setting.textColor,
-        isUpperCase: this.props.setting.isUpper,
-        wordCount: this.props.setting.numsWord
-      })
-    db.countIsLearning().then(data => {
-      this.setState({ counter: data })
+    this.setState({
+      textColor: this.props.setting.textColor,
+      isUpperCase: this.props.setting.isUpper,
+      wordCount: this.props.setting.wordCount
     })
-    setInterval(() => {
-      db.getAllTopic().then(data => {
-        this.setState({ data: data })
-      })
-    }, 500)
+    // db.countIsLearning().then(data => {
+    //   this.setState({ counter: data })
+    // })
+    let data = await db.getAllTopic()
+    beginList = JSON.parse(JSON.stringify(data))
+    this.setState({ data, loading: false })
+    this.toggleLearned()
   }
+
+  // updateWordCount() {
+  //   this.props.navigation.setParams({
+  //     title: 'Số từ: ' + selectedWordIds.length + '/' + this.state.wordCount
+  //   })
+  // }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.setting !== this.props.setting) {
@@ -86,77 +131,74 @@ class LessonEdit extends React.PureComponent {
     }
   }
 
-  toggleIsLearningState(word) {
-    if (
-      this.state.counter === this.state.wordCount &&
-      word.isLearning === false
-    ) {
-      return
+  toggleLearned(id, toState) {
+    let { data } = this.state
+    let learning = 0
+    for (let i in data) {
+      for (let j in data[i].words) {
+        let c = data[i].words[j]
+        if (c._id === id) data[i].words[j].state = toState
+        if (c.state === LEARNING) learning++
+      }
     }
-
-    if (word.isCompleted) {
-      Alert.alert(
-        'Bạn có muốn học lại từ này ?',
-        '',
-        [
-          {
-            text: 'Không',
-            onPress: () => {
-              return
-            }
-          },
-          { text: 'Có', onPress: () => db.toggleIsComplete(word) }
-        ],
-        { cancelable: false }
-      )
-    }
-
-    db.toggleIsLearning(word).then(() => {
-      db.countIsLearning().then(data => {
-        this.setState({ counter: data })
-      })
+    this.setState({ data, learning })
+    this.props.navigation.setParams({
+      title: 'Số từ: ' + learning + '/' + this.state.wordCount
     })
   }
 
+  toggleIsLearningState(word) {
+    switch (word.state) {
+      case NEW_WORD:
+        if (this.state.learning < this.state.wordCount)
+          this.toggleLearned(word._id, LEARNING)
+        break
+      case LEARNED:
+        if (this.state.learning < this.state.wordCount)
+          Alert.alert(
+            'Từ này đã học rồi!',
+            'Bạn có muốn học lại từ này ?',
+            [
+              {
+                text: 'Không'
+              },
+              {
+                text: 'Có',
+                onPress: () => this.toggleLearned(word._id, LEARNING)
+              }
+            ],
+            { cancelable: false }
+          )
+        break
+      case LEARNING:
+        this.toggleLearned(word._id, NEW_WORD)
+    }
+
+    // db.toggleIsLearning(word).then(() => {
+    //   db.countIsLearning().then(data => {
+    //     this.setState({ counter: data })
+    //   })
+    // })
+  }
+
   render() {
-    let { data, counter, max, wordCount } = this.state
+    let { data, counter, max, wordCount, loading } = this.state
+    if (loading)
+      return (
+        <View
+          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+        >
+          <ActivityIndicator />
+        </View>
+      )
     return (
       <View style={styles.container}>
-        {/* <View
-          style={{
-            height: Platform.OS === 'ios' ? 76 : 56,
-            backgroundColor: 'red',
-            alignItems: 'center',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            padding: 16
-          }}
-        >
-          <Text
-            style={{
-              marginTop: Platform.OS === 'ios' ? 20 : 0,
-              fontSize: 24,
-              color: 'white'
-            }}
-          >{`Số từ: ${counter} / ${wordCount}`}</Text>
-          <TouchableOpacity
-            onPress={() => {
-              this.props.navigation.goBack()
-              this.props.navigation.state.params.loadData()
-            }}
-            style={{ marginTop: Platform.OS === 'ios' ? 20 : 0 }}
-          >
-            <Text style={{ fontSize: 24, color: 'white' }}>Lưu</Text>
-          </TouchableOpacity>
-        </View> */}
-        {
-          <FlatList
-            keyExtractor={(item, index) => index.toString()}
-            extraData={this.state}
-            data={data}
-            renderItem={this.renderTopicList}
-          />
-        }
+        <FlatList
+          keyExtractor={(item, index) => index.toString()}
+          extraData={this.state}
+          data={data}
+          renderItem={this.renderTopicList}
+        />
       </View>
     )
   }
@@ -172,7 +214,7 @@ class LessonEdit extends React.PureComponent {
             padding: 10
           }}
         >
-          {`${item.title}`}
+          {item.title}
         </Text>
         <View style={{ padding: 16 }}>
           <FlatList
@@ -198,10 +240,10 @@ class LessonEdit extends React.PureComponent {
           style={{
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: item.isCompleted ? '#fcfcfc' : 'white'
+            backgroundColor: item.state === LEARNED ? '#e7e5e5' : 'white'
           }}
         >
-          {item.isLearning ? (
+          {item.state === LEARNING ? (
             <Ionicons
               style={{
                 position: 'absolute',
@@ -228,7 +270,14 @@ function mapStateToProps(state, ownProps) {
   }
 }
 
-export default connect(mapStateToProps)(LessonEdit)
+function mapDispatchToProps(dispatch) {
+  return {
+    showHideLoading: (visible, message) =>
+      dispatch(AppStateActions.showHideLoading(visible, message))
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(LessonEdit)
 
 const styles = StyleSheet.create({
   container: {

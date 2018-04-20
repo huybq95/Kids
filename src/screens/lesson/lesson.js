@@ -21,6 +21,7 @@ import { FlatList } from 'react-native-gesture-handler'
 import * as SettingActions from '../../stores/setting/actions'
 import * as AppStateActions from '../../stores/appState/actions'
 import Constants from '../../constants/Constants'
+import * as utils from '../../utils/index'
 
 const WIDTH = (Dimensions.get('window').width - 56) / 3
 const HEIGHT = (Dimensions.get('window').height - 300) / 5
@@ -64,34 +65,33 @@ class Lesson extends React.PureComponent {
   }
 
   async componentWillMount() {
-    this.setState({ loading: true })
+    // this.setState({ loading: true })
     this.setState({
       textColor: this.props.setting.textColor,
       isUpperCase: this.props.setting.isUpper,
       wordCount: this.props.setting.numsWord,
       newCount: this.props.setting.newCount
     })
-    this.loadData()
+    await this.loadData()
     this.props.navigation.setParams({ onPressEdit: this.onPressEdit })
   }
 
   async loadData() {
     console.log('get today lesson')
     let data = await db.getTodayLesson1(
-      parseInt(this.state.wordCount),
-      parseInt(this.state.newCount)
+      parseInt(this.state.wordCount || 5),
+      parseInt(this.state.newCount || 1)
     )
-    console.log('get today lesson done')
-    this.setState({ data: data, loading: false })
+    console.log('get today lesson done', data)
+    this.setState({ data, loading: false })
   }
 
   onPressEdit = () => {
-    if (!this.props.learnedToday)
+    if (!this.props.learnedToday) {
       this.props.navigation.navigate('LessonEdit', {
-        data: this.state.data,
-        counter: this.state.wordCount,
-        loadData: this.loadData.bind(this)
+        onGoBack: () => this.loadData()
       })
+    }
   }
 
   convertTime(time) {
@@ -124,19 +124,19 @@ class Lesson extends React.PureComponent {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.setting !== nextProps.setting && !this.state.loading) {
-      this.setState(
-        {
-          textColor: nextProps.setting.textColor,
-          isUpperCase: nextProps.setting.isUpperCase,
-          wordCount: nextProps.setting.wordCount,
-          newCount: nextProps.setting.newCount
-        },
-        () => {
-          this.loadData()
-        }
-      )
-    }
+    // if (this.props.setting !== nextProps.setting && !this.state.loading) {
+    //   this.setState(
+    //     {
+    //       textColor: nextProps.setting.textColor,
+    //       isUpperCase: nextProps.setting.isUpperCase,
+    //       wordCount: nextProps.setting.wordCount,
+    //       newCount: nextProps.setting.newCount
+    //     },
+    //     () => {
+    //       this.loadData()
+    //     }
+    //   )
+    // }
     if (this.props.learnedToday !== nextProps.learnedToday) {
       this.props.navigation.setParams({ learnedToday: nextProps.learnedToday })
     }
@@ -145,11 +145,13 @@ class Lesson extends React.PureComponent {
   onPressLearn = async name => {
     this.props.showHideLoading(true, 'Đang tạo bài học...')
     await this.loadData()
-    db.resetStateIsLearning(this.state.data)
+    // db.resetStateIsLearning(this.state.data)
     let data = this.state.data.slice()
     data.sort(() => Math.random() - 0.5)
     this.props.navigation.navigate('LessonDetails', { data })
     this.props.showHideLoading(false)
+    // let data = await db.getAllWords()
+    // console.log('get all words ', data)
   }
 
   render() {
@@ -158,9 +160,9 @@ class Lesson extends React.PureComponent {
       <View style={styles.container}>
         <Card style={{ flex: 1 }}>
           <CardItem header>
-            <Text style={{ fontSize: 32, color: 'black' }}>{`${moment(
-              new Date().getTime()
-            ).format('DD/MM/YYYY')}`}</Text>
+            <Text style={{ fontSize: 32, color: 'black' }}>
+              {utils.getCurrentDate()}
+            </Text>
           </CardItem>
           <View style={{ borderBottomColor: 'red', borderBottomWidth: 1 }} />
           <CardItem

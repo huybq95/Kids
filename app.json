@@ -5,10 +5,10 @@
     "version": "1.0.0",
     "slug": "glenn-doman-app",
     "ios": {
-      "bundleIdentifier": "com.huybq.glenndoman"
+      "bundleIdentifier": "com.huylv.glenndoman"
     },
     "android": {
-      "package": "com.huybq.glenndoman"
+      "package": "com.huylv.glenndoman"
     },
     "icon": "./src/img/gl.png",
     "splash": {

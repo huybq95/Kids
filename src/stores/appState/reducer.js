@@ -1,4 +1,5 @@
 import * as types from './types'
+import * as utils from '../../utils'
 
 const initialState = {
   learnedToday: false,
@@ -13,7 +14,7 @@ export default function reduce(state = initialState, action) {
     case types.SET_LEARNED_TODAY:
       return {
         ...state,
-        learnedToday: action.learnedToday === 'true'
+        learnedToday: action.lastSaveDay === utils.getCurrentDate()
       }
     case types.SHOW_HIDE_LOADING:
       return {

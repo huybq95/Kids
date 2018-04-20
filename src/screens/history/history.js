@@ -13,6 +13,7 @@ import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import { Card, CardItem } from 'native-base'
 import * as db from '../../db/db'
+import Constants from '../../constants/Constants'
 
 class History extends React.PureComponent {
   static navigationOptions = ({ navigation }) => {
@@ -37,23 +38,23 @@ class History extends React.PureComponent {
       textColor: this.props.setting.textColor || 'red',
       isUpperCase: this.props.setting.isUpperCase || false,
       data: [],
-      loading: true
+      loading: false
     }
   }
 
-  componentWillMount() {
-    this.setState({ loading: true })
-    this.loadData()
+  async componentWillMount() {
     this.setState({
       textColor: this.props.setting.textColor,
       isUpperCase: this.props.setting.isUpper
     })
+    await this.onRefresh()
   }
 
-  loadData = () => {
-    db.getHistory({ done: true }).then(data => {
-      this.setState({ data, loading: false })
-    })
+  onRefresh = async () => {
+    this.setState({ loading: true })
+    let data = await db.getHistory({ done: true })
+    data.reverse()
+    this.setState({ data, loading: false })
   }
 
   componentWillReceiveProps(nextProps) {
@@ -66,14 +67,7 @@ class History extends React.PureComponent {
   }
 
   getListWordToString(words) {
-    let string = ''
-    if (words.length === 0) {
-      return ''
-    }
-    for (var word in words) {
-      string += words[word].text + ', '
-    }
-    return string
+    return words.map(item => item.text).join(', ')
   }
 
   renderItem = ({ item, index }) => {
@@ -111,21 +105,37 @@ class History extends React.PureComponent {
           <ActivityIndicator />
         </View>
       )
-    if (data.length == 0)
-      return (
-        <View
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-        >
-          <Text>Bạn chưa học bài nào!</Text>
-        </View>
-      )
+    // if (data.length == 0)
+    //   return (
+    //     <View
+    //       style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+    //     >
+    //       <Text>Bạn chưa học bài nào!</Text>
+    //     </View>
+    //   )
 
     return (
       <View style={{ flex: 1 }}>
+        {this.state.data.length === 0 && (
+          <Text
+            style={{
+              position: 'absolute',
+              flex: 1,
+              top: 50,
+              width: 160,
+              left: Constants.screen.width / 2 - 80,
+              textAlign: 'center'
+            }}
+          >
+            Bạn chưa học bài nào!
+          </Text>
+        )}
         <FlatList
           data={data}
           renderItem={this.renderItem}
           keyExtractor={(item, index) => index.toString()}
+          refreshing={this.state.loading}
+          onRefresh={this.onRefresh}
         />
       </View>
     )

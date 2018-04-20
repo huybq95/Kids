@@ -3,27 +3,27 @@ import moment from 'moment'
 
 const initialState = {
   isUpperCase: false,
-  textColor: 'black',
+  textColor: 'red',
   wordCount: '5',
   newCount: '1',
   isAlert: false,
-  isManual: true,
-  timeShow: 3000,
+  isManual: false,
+  timeShow: 1000,
   alerts: [
     {
       time: moment(new Date().getTime() + 60000).format('HH:mm'),
       title: 'Nhắc nhở',
-      body: 'Lần 1'
+      body: 'Học bài lần 1'
     },
     {
       time: moment(new Date().getTime() + 120000).format('HH:mm'),
       title: 'Nhắc nhở',
-      body: 'Lần 2'
+      body: 'Học bài lần 2'
     },
     {
       time: moment(new Date().getTime() + 180000).format('HH:mm'),
       title: 'Nhắc nhở',
-      body: 'Lần 3'
+      body: 'Học bài lần 3'
     }
   ]
 }
