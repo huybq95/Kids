@@ -6,7 +6,10 @@ import {
   Dimensions,
   Platform,
   StatusBar,
-  Alert
+  Alert,
+  Animated,
+  View,
+  Text
 } from 'react-native'
 import { connect } from 'react-redux'
 import {
@@ -20,8 +23,9 @@ import TopicDetails from '../screens/topic/topic.details'
 import TabHome from './TabHome'
 import * as AppStateActions from '../stores/appState/actions'
 import * as SettingActions from '../stores/setting/actions'
-import { ScreenOrientation } from 'expo'
+import { ScreenOrientation, Updates } from 'expo'
 import * as db from '../../src/db/db'
+import Constants from '../constants/Constants'
 
 export const RootNavigator = StackNavigator(
   {
@@ -45,6 +49,10 @@ class RootWithNavigationState extends Component {
   constructor(props) {
     super(props)
     ScreenOrientation.allow(ScreenOrientation.Orientation.PORTRAIT_UP)
+    this.state = {
+      updateMessage: null,
+      translateY: new Animated.Value(50)
+    }
   }
 
   async componentWillMount() {
@@ -59,8 +67,79 @@ class RootWithNavigationState extends Component {
     }
   }
 
+  async componentDidMount() {
+    //show snackbar
+    Animated.timing(this.state.translateY, {
+      toValue: 0,
+      duration: 2000
+    }).start()
+
+    this.setState({ updateMessage: 'Đang kiểm tra phiên bản mới...' })
+
+    try {
+      const update = await Updates.checkForUpdateAsync()
+      if (update.isAvailable) {
+        this.setState({ updateMessage: 'Đang cập nhật phiên bản mới...' })
+        await Updates.fetchUpdateAsync()
+        Alert.alert(
+          'Cập nhật',
+          'Vui lòng khởi động lại app để cập nhật phiên bản mới',
+          [
+            {
+              text: 'Khởi động lại',
+              onPress: () => Updates.reload()
+            }
+          ]
+        )
+      } else {
+        this.setState({
+          updateMessage: 'Bạn đang sử dụng phiên bản mới nhất: '
+        })
+
+        setTimeout(() => {
+          this.state.translateY.setValue(0)
+          Animated.timing(this.state.translateY, {
+            toValue: 50,
+            duration: 2000
+          }).start(() => this.setState({ updateMessage: null }))
+        }, 5000)
+      }
+    } catch (e) {
+      this.setState({ updateMessage: e.message })
+
+      setTimeout(() => {
+        this.state.translateY.setValue(0)
+        Animated.timing(this.state.translateY, {
+          toValue: 50,
+          duration: 2000
+        }).start(() => this.setState({ updateMessage: null }))
+      }, 5000)
+    }
+  }
+
   render() {
-    return <RootNavigator />
+    return (
+      <View style={{ flex: 1 }}>
+        <RootNavigator />
+        {this.state.updateMessage ? (
+          <Animated.View
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              backgroundColor: '#FFFF0089',
+              width: Constants.screen.width,
+              alignItems: 'center',
+              flexDirection: 'row',
+              transform: [{ translateY: this.state.translateY }]
+            }}
+          >
+            <Text style={{ flex: 1, textAlign: 'center', margin: 7 }}>
+              {this.state.updateMessage}
+            </Text>
+          </Animated.View>
+        ) : null}
+      </View>
+    )
   }
 }
 

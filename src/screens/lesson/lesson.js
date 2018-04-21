@@ -77,12 +77,10 @@ class Lesson extends React.PureComponent {
   }
 
   async loadData() {
-    console.log('get today lesson')
     let data = await db.getTodayLesson1(
       parseInt(this.state.wordCount || 5),
       parseInt(this.state.newCount || 1)
     )
-    console.log('get today lesson done', data)
     this.setState({ data, loading: false })
   }
 
