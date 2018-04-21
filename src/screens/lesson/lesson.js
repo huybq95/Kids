@@ -13,7 +13,6 @@ import moment from 'moment'
 import { Ionicons, Entypo } from '@expo/vector-icons'
 import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
-import { Notifications } from 'expo'
 import ActionButton from 'react-native-action-button'
 import Fab from '../../components/fab'
 import * as db from '../../db/db'
@@ -60,7 +59,8 @@ class Lesson extends React.PureComponent {
       isUpperCase: false,
       wordCount: 5,
       newCount: 1,
-      loading: false
+      loading: false,
+      localNoti: null
     }
   }
 
@@ -90,35 +90,6 @@ class Lesson extends React.PureComponent {
         onGoBack: () => this.loadData()
       })
     }
-  }
-
-  convertTime(time) {
-    let _time = {}
-    let string = time.split(':')
-    _time.hour = string[0]
-    _time.minute = string[1]
-    return _time
-  }
-
-  componentDidMount() {
-    this.props.setting.alerts.map((e, i) => {
-      let _time = this.convertTime(e.time)
-      let date = new Date()
-      date.setHours(_time.hour)
-      date.setMinutes(_time.minute)
-      Notifications.scheduleLocalNotificationAsync(
-        {
-          title: e.title,
-          body: e.body,
-          sound: true,
-          vibrate: 500,
-          priority: 'hight'
-        },
-        {
-          time: date
-        }
-      )
-    })
   }
 
   componentWillReceiveProps(nextProps) {

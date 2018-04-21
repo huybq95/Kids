@@ -3,6 +3,7 @@ import moment from 'moment'
 import * as utils from '../utils'
 import Constants from '../constants/Constants'
 import { Alert } from 'react-native'
+import { initialState } from '../stores/setting/reducer'
 
 var db = new Datastore({ filename: 'myDatabase', autoload: true })
 db.ensureIndex({ fieldName: 'isFirstLaunchApp', unique: true, sparse: true })
@@ -11,36 +12,6 @@ db.ensureIndex({ fieldName: 'id', unique: true, sparse: true })
 db.ensureIndex({ fieldName: 'id1', unique: true, sparse: true })
 db.ensureIndex({ fieldName: 'timeCompleted', unique: true, sparse: true })
 db.ensureIndex({ fieldName: 'alerts', unique: true, sparse: true })
-
-const setting = {
-  isFirstLaunchApp: true,
-  type: 'setting',
-  isUpper: false,
-  textColor: 'black',
-  wordCount: 5,
-  newCount: 1,
-  notification: true,
-  isAlert: false,
-  isManual: true,
-  timeShow: 3000,
-  alerts: [
-    {
-      time: moment(new Date().getTime() + 60000).format('HH:mm'),
-      title: 'Nhắc nhở',
-      body: 'Lần 1'
-    },
-    {
-      time: moment(new Date().getTime() + 120000).format('HH:mm'),
-      title: 'Nhắc nhở',
-      body: 'Lần 2'
-    },
-    {
-      time: moment(new Date().getTime() + 180000).format('HH:mm'),
-      title: 'Nhắc nhở',
-      body: 'Lần 3'
-    }
-  ]
-}
 
 const words = [
   {
@@ -322,10 +293,9 @@ const words = [
 ]
 
 export function initData() {
-  // return new Promise((resolve, reject) => {
-  db.insert(setting, (err, res) => {})
+  //initialState is initialState of setting
+  db.insert(initialState, (err, res) => {})
   db.insert(words, (err, res) => {})
-  // })
 }
 
 export function getSetting() {

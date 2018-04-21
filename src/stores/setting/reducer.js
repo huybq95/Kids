@@ -1,7 +1,7 @@
 import * as types from './types'
 import moment from 'moment'
 
-const initialState = {
+export const initialState = {
   isUpperCase: false,
   textColor: 'red',
   wordCount: '5',

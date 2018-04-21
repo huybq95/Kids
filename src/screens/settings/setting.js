@@ -20,7 +20,7 @@ import { connect } from 'react-redux'
 import * as SettingActions from '../../stores/setting/actions'
 import * as AppStateActions from '../../stores/appState/actions'
 import moment from 'moment'
-// import {Notifications} from 'expo';
+import { initialState } from '../../stores/setting/reducer'
 
 const NUMBERS_LIST = [1, 2, 3, 4, 5, 10, 15, 20, 25]
 const NEW_LIST = [1, 2, 3, 4, 5]
@@ -44,32 +44,7 @@ class Setting extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {
-      settings: {
-        isUpperCase: false,
-        textColor: 'red',
-        wordCount: '5',
-        newCount: '1',
-        isAlert: true,
-        isManual: false,
-        timeShow: 1000,
-        alerts: [
-          {
-            time: moment(new Date().getTime() + 1000).format('HH:mm'),
-            title: 'Title 1',
-            body: 'Body 1'
-          },
-          {
-            time: moment(new Date().getTime() + 1800000).format('HH:mm'),
-            title: 'Title 2',
-            body: 'Body 1'
-          },
-          {
-            time: moment(new Date().getTime() + 3600000).format('HH:mm'),
-            title: 'Title 3',
-            body: 'Body 1'
-          }
-        ]
-      }
+      settings: initialState
     }
   }
 
@@ -94,11 +69,11 @@ class Setting extends React.PureComponent {
   async saveSettingsToDB(data) {
     const curSetting = this.state.settings
     let objSetting = {}
-    objSetting.isUpper = data.isUpperCase || curSetting.isUpperCase
+    objSetting.isUpperCase = data.isUpperCase || curSetting.isUpperCase
     objSetting.textColor = data.textColor || curSetting.textColor
-    objSetting.numsWord = data.wordCount || curSetting.wordCount
-    objSetting.numsNewWord = data.newCount || curSetting.newCount
-    objSetting.notification = data.isAlert || curSetting.isAlert
+    objSetting.wordCount = data.wordCount || curSetting.wordCount
+    objSetting.newCount = data.newCount || curSetting.newCount
+    objSetting.isAlert = data.isAlert || curSetting.isAlert
     objSetting.alerts = data.alerts || curSetting.alerts
     objSetting.isManual = data.isManual || curSetting.isManual
     await db.saveSetting(objSetting)
