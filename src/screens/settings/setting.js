@@ -79,15 +79,14 @@ class Setting extends React.PureComponent {
     objSetting.isManual = data.isManual || curSetting.isManual
     await db.saveSetting(objSetting)
     await this.loadData()
-    // this.props.
   }
 
   changeTextType(value) {
     this.props.showHideLoading(true, 'Cập nhật cài đặt...')
     this.setState(
       { settings: { ...this.state.settings, isUpperCase: value } },
-      () => {
-        this.saveSettingsToDB(this.state.settings)
+      async () => {
+        await this.saveSettingsToDB(this.state.settings)
       }
     )
   }
@@ -96,8 +95,8 @@ class Setting extends React.PureComponent {
     this.props.showHideLoading(true, 'Cập nhật cài đặt...')
     this.setState(
       { settings: { ...this.state.settings, isManual: value } },
-      () => {
-        this.saveSettingsToDB(this.state.settings)
+      async () => {
+        await this.saveSettingsToDB(this.state.settings)
       }
     )
   }
@@ -111,8 +110,8 @@ class Setting extends React.PureComponent {
       {
         settings: { ...settings, alert: _alerts }
       },
-      () => {
-        this.saveSettingsToDB(this.state.settings)
+      async () => {
+        await this.saveSettingsToDB(this.state.settings)
       }
     )
   }
@@ -120,8 +119,8 @@ class Setting extends React.PureComponent {
   changeAlert() {
     this.props.showHideLoading(true, 'Cập nhật cài đặt...')
     // Vibration.vibrate()
-    this.setState({ settings: { ...this.state.settings } }, () => {
-      this.saveSettingsToDB(this.state.settings)
+    this.setState({ settings: { ...this.state.settings } }, async () => {
+      await this.saveSettingsToDB(this.state.settings)
     })
   }
 
@@ -129,8 +128,8 @@ class Setting extends React.PureComponent {
     this.props.showHideLoading(true, 'Cập nhật cài đặt...')
     this.setState(
       { settings: { ...this.state.settings, textColor: color } },
-      () => {
-        this.saveSettingsToDB(this.state.settings)
+      async () => {
+        await this.saveSettingsToDB(this.state.settings)
       }
     )
   }
@@ -140,8 +139,8 @@ class Setting extends React.PureComponent {
     let value = NUMBERS_LIST[index] + ''
     this.setState(
       { settings: { ...this.state.settings, wordCount: value } },
-      () => {
-        this.saveSettingsToDB(this.state.settings)
+      async () => {
+        await this.saveSettingsToDB(this.state.settings)
       }
     )
   }
@@ -151,8 +150,8 @@ class Setting extends React.PureComponent {
     let value = NEW_LIST[index] + ''
     this.setState(
       { settings: { ...this.state.settings, newCount: value } },
-      () => {
-        this.saveSettingsToDB(this.state.settings)
+      async () => {
+        await this.saveSettingsToDB(this.state.settings)
       }
     )
   }
@@ -373,7 +372,9 @@ class Setting extends React.PureComponent {
             alignItems: 'center'
           }}
         >
-          <Text style={[styles.title, { width: '60%' }]}>Nhắc nhở</Text>
+          <Text style={[styles.title, { width: '60%' }]}>
+            Nhắc nhở hàng ngày
+          </Text>
           <View style={styles.rightContainer}>
             <Switch
               thumbTintColor={Platform.OS === 'ios' ? null : 'red'}

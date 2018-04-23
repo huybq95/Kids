@@ -19,7 +19,9 @@ export function saveSetting(data) {
         date.setHours(_time.hour)
         date.setMinutes(_time.minute)
         date.setSeconds(0)
-        console.log('alert ', date, e)
+        if (date < new Date()) {
+          date.setDate(date.getDate() + 1)
+        }
         Notifications.scheduleLocalNotificationAsync(
           {
             title: e.title,
