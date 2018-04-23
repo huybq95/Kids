@@ -93,7 +93,7 @@ class RootWithNavigationState extends Component {
         )
       } else {
         this.setState({
-          updateMessage: 'Bạn đang sử dụng phiên bản mới nhất: '
+          updateMessage: 'Bạn đang sử dụng phiên bản mới nhất'
         })
 
         setTimeout(() => {
