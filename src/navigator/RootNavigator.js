@@ -56,8 +56,8 @@ class RootWithNavigationState extends Component {
   }
 
   async componentWillMount() {
-    let data = await db.getSetting()
-    if (!data) {
+    let data = await db.getAllWords()
+    if (!data || data.length === 0) {
       console.log('no data')
       await db.initData()
     } else {

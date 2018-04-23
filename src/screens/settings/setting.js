@@ -50,16 +50,17 @@ class Setting extends React.PureComponent {
 
   async loadData() {
     let data = await db.getSetting()
+    console.log('load data', data)
     //set to redux store
     this.props.saveSetting(data)
     //set to state
     const curSetting = this.state.settings
     let objSetting = {}
-    objSetting.isUpperCase = data.isUpper || curSetting.isUpperCase
+    objSetting.isUpperCase = data.isUpperCase || curSetting.isUpperCase
     objSetting.textColor = data.textColor || curSetting.textColor
-    objSetting.wordCount = data.numsWord || curSetting.numsWord
-    objSetting.newCount = data.numsNewWord || curSetting.numsNewWord
-    objSetting.isAlert = data.notification || curSetting.isAlert
+    objSetting.wordCount = data.wordCount || curSetting.wordCount
+    objSetting.newCount = data.newCount || curSetting.newCount
+    objSetting.isAlert = data.isAlert || curSetting.isAlert
     objSetting.alerts = data.alerts || curSetting.alerts
     objSetting.isManual = data.isManual || curSetting.isManual
     this.setState({ settings: objSetting })

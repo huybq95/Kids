@@ -294,8 +294,13 @@ const words = [
 
 export function initData() {
   //initialState is initialState of setting
-  db.insert(initialState, (err, res) => {})
-  db.insert(words, (err, res) => {})
+
+  db.insert({ ...initialState, type: 'setting' }, (err, res) => {
+    console.log('insert1 ', err)
+  })
+  db.insert(words, (err, res) => {
+    console.log('insert2 ', err)
+  })
 }
 
 export function getSetting() {
@@ -573,12 +578,6 @@ export async function getTodayLesson1(numsWord, newCount) {
     await saveHistory(learningWords, false)
     return learningWords
   }
-}
-
-export function getMausacden() {
-  return new Promise((resolve, reject) => {
-    // db.find({})
-  })
 }
 
 export async function toggleLearned(wordId) {
