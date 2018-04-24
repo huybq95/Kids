@@ -102,18 +102,18 @@ class LessonEdit extends React.PureComponent {
     this.props.navigation.setParams({
       onClickSave: this.onClickSave
     })
-    this.setState({
-      textColor: this.props.setting.textColor,
-      isUpperCase: this.props.setting.isUpper,
-      wordCount: this.props.setting.wordCount
-    })
-    // db.countIsLearning().then(data => {
-    //   this.setState({ counter: data })
-    // })
     let data = await db.getAllTopic()
     beginList = JSON.parse(JSON.stringify(data))
-    this.setState({ data, loading: false })
-    this.toggleLearned()
+    this.setState(
+      {
+        textColor: this.props.setting.textColor,
+        isUpperCase: this.props.setting.isUpper,
+        wordCount: this.props.setting.wordCount,
+        data,
+        loading: false
+      },
+      () => this.toggleLearned()
+    )
   }
 
   // updateWordCount() {
@@ -132,7 +132,7 @@ class LessonEdit extends React.PureComponent {
   }
 
   toggleLearned(id, toState) {
-    let { data } = this.state
+    let { data, wordCount } = this.state
     let learning = 0
     for (let i in data) {
       for (let j in data[i].words) {
@@ -143,7 +143,7 @@ class LessonEdit extends React.PureComponent {
     }
     this.setState({ data, learning })
     this.props.navigation.setParams({
-      title: 'Số từ: ' + learning + '/' + this.state.wordCount
+      title: 'Số từ: ' + learning + '/' + wordCount
     })
   }
 

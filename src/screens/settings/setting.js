@@ -44,8 +44,12 @@ class Setting extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {
-      settings: initialState
+      setting: initialState
     }
+  }
+
+  async componentWillMount() {
+    this.setState({ setting: this.props.setting })
   }
 
   async loadData() {
@@ -54,7 +58,7 @@ class Setting extends React.PureComponent {
     //set to redux store
     this.props.saveSetting(data)
     //set to state
-    const curSetting = this.state.settings
+    const curSetting = this.state.setting
     let objSetting = {}
     objSetting.isUpperCase = data.isUpperCase || curSetting.isUpperCase
     objSetting.textColor = data.textColor || curSetting.textColor
@@ -63,12 +67,12 @@ class Setting extends React.PureComponent {
     objSetting.isAlert = data.isAlert || curSetting.isAlert
     objSetting.alerts = data.alerts || curSetting.alerts
     objSetting.isManual = data.isManual || curSetting.isManual
-    this.setState({ settings: objSetting })
+    this.setState({ setting: objSetting })
     this.props.showHideLoading(false)
   }
 
   async saveSettingsToDB(data) {
-    const curSetting = this.state.settings
+    const curSetting = this.state.setting
     let objSetting = {}
     objSetting.isUpperCase = data.isUpperCase || curSetting.isUpperCase
     objSetting.textColor = data.textColor || curSetting.textColor
@@ -84,9 +88,9 @@ class Setting extends React.PureComponent {
   changeTextType(value) {
     this.props.showHideLoading(true, 'Cập nhật cài đặt...')
     this.setState(
-      { settings: { ...this.state.settings, isUpperCase: value } },
+      { setting: { ...this.state.setting, isUpperCase: value } },
       async () => {
-        await this.saveSettingsToDB(this.state.settings)
+        await this.saveSettingsToDB(this.state.setting)
       }
     )
   }
@@ -94,24 +98,24 @@ class Setting extends React.PureComponent {
   changeManual(value) {
     this.props.showHideLoading(true, 'Cập nhật cài đặt...')
     this.setState(
-      { settings: { ...this.state.settings, isManual: value } },
+      { setting: { ...this.state.setting, isManual: value } },
       async () => {
-        await this.saveSettingsToDB(this.state.settings)
+        await this.saveSettingsToDB(this.state.setting)
       }
     )
   }
 
   changeTime(data, position) {
     this.props.showHideLoading(true, 'Cập nhật cài đặt...')
-    let { settings } = this.state
-    let _alerts = settings.alerts
+    let { setting } = this.state
+    let _alerts = setting.alerts
     _alerts[position] = data
     this.setState(
       {
-        settings: { ...settings, alert: _alerts }
+        setting: { ...setting, alert: _alerts }
       },
       async () => {
-        await this.saveSettingsToDB(this.state.settings)
+        await this.saveSettingsToDB(this.state.setting)
       }
     )
   }
@@ -119,17 +123,17 @@ class Setting extends React.PureComponent {
   changeAlert() {
     this.props.showHideLoading(true, 'Cập nhật cài đặt...')
     // Vibration.vibrate()
-    this.setState({ settings: { ...this.state.settings } }, async () => {
-      await this.saveSettingsToDB(this.state.settings)
+    this.setState({ setting: { ...this.state.setting } }, async () => {
+      await this.saveSettingsToDB(this.state.setting)
     })
   }
 
   changeTextColor(color) {
     this.props.showHideLoading(true, 'Cập nhật cài đặt...')
     this.setState(
-      { settings: { ...this.state.settings, textColor: color } },
+      { setting: { ...this.state.setting, textColor: color } },
       async () => {
-        await this.saveSettingsToDB(this.state.settings)
+        await this.saveSettingsToDB(this.state.setting)
       }
     )
   }
@@ -138,9 +142,9 @@ class Setting extends React.PureComponent {
     this.props.showHideLoading(true, 'Cập nhật cài đặt...')
     let value = NUMBERS_LIST[index] + ''
     this.setState(
-      { settings: { ...this.state.settings, wordCount: value } },
+      { setting: { ...this.state.setting, wordCount: value } },
       async () => {
-        await this.saveSettingsToDB(this.state.settings)
+        await this.saveSettingsToDB(this.state.setting)
       }
     )
   }
@@ -149,9 +153,9 @@ class Setting extends React.PureComponent {
     this.props.showHideLoading(true, 'Cập nhật cài đặt...')
     let value = NEW_LIST[index] + ''
     this.setState(
-      { settings: { ...this.state.settings, newCount: value } },
+      { setting: { ...this.state.setting, newCount: value } },
       async () => {
-        await this.saveSettingsToDB(this.state.settings)
+        await this.saveSettingsToDB(this.state.setting)
       }
     )
   }
@@ -202,9 +206,9 @@ class Setting extends React.PureComponent {
 
   toggleAlert(value) {
     this.setState(
-      { settings: { ...this.state.settings, isAlert: value } },
+      { setting: { ...this.state.setting, isAlert: value } },
       () => {
-        this.saveSettingsToDB(this.state.settings)
+        this.saveSettingsToDB(this.state.setting)
       }
     )
   }
@@ -225,7 +229,7 @@ class Setting extends React.PureComponent {
                 thumbTintColor={Platform.OS === 'ios' ? null : 'red'}
                 onTintColor="red"
                 onValueChange={value => this.changeTextType(value)}
-                value={this.state.settings.isUpperCase}
+                value={this.state.setting.isUpperCase}
               />
             </View>
           </View>
@@ -236,17 +240,14 @@ class Setting extends React.PureComponent {
                 thumbTintColor={Platform.OS === 'ios' ? null : 'red'}
                 onTintColor="red"
                 onValueChange={value => this.changeManual(value)}
-                value={this.state.settings.isManual}
+                value={this.state.setting.isManual}
               />
             </View>
           </View>
           <View style={styles.seperate} />
           <View style={styles.rowContainer}>
             <Text
-              style={[
-                styles.textLeft,
-                { color: this.state.settings.textColor }
-              ]}
+              style={[styles.textLeft, { color: this.state.setting.textColor }]}
             >
               Màu chữ
             </Text>
@@ -262,7 +263,7 @@ class Setting extends React.PureComponent {
                 ]}
                 onPress={() => this.changeTextColor('black')}
               >
-                {this.state.settings.textColor === 'black' ? (
+                {this.state.setting.textColor === 'black' ? (
                   <Ionicons name="ios-checkmark" size={32} color="white" />
                 ) : null}
               </TouchableOpacity>
@@ -278,7 +279,7 @@ class Setting extends React.PureComponent {
                 ]}
                 onPress={() => this.changeTextColor('red')}
               >
-                {this.state.settings.textColor === 'red' ? (
+                {this.state.setting.textColor === 'red' ? (
                   <Ionicons name="ios-checkmark" size={32} color="white" />
                 ) : null}
               </TouchableOpacity>
@@ -298,7 +299,7 @@ class Setting extends React.PureComponent {
                   [{ color: 'red' }]
                 ]}
                 defaultIndex={0}
-                defaultValue={this.state.settings.wordCount.toString()}
+                defaultValue={this.state.setting.wordCount.toString()}
                 onSelect={index => this.changeWordCount(index)}
                 options={NUMBERS_LIST}
               >
@@ -311,7 +312,7 @@ class Setting extends React.PureComponent {
                   }}
                 >
                   <Text style={styles.textStyleModalDropdown}>
-                    {this.state.settings.wordCount}
+                    {this.state.setting.wordCount}
                   </Text>
                   <Ionicons
                     name="md-arrow-dropdown"
@@ -337,7 +338,7 @@ class Setting extends React.PureComponent {
                   [{ color: 'red' }]
                 ]}
                 defaultIndex={0}
-                defaultValue={this.state.settings.wordCount.toString()}
+                defaultValue={this.state.setting.wordCount.toString()}
                 onSelect={index => this.changeNewCount(index)}
                 options={NEW_LIST}
               >
@@ -350,7 +351,7 @@ class Setting extends React.PureComponent {
                   }}
                 >
                   <Text style={styles.textStyleModalDropdown}>
-                    {this.state.settings.newCount}
+                    {this.state.setting.newCount}
                   </Text>
                   <Ionicons
                     name="md-arrow-dropdown"
@@ -380,11 +381,11 @@ class Setting extends React.PureComponent {
               thumbTintColor={Platform.OS === 'ios' ? null : 'red'}
               onTintColor="red"
               onValueChange={value => this.toggleAlert(value)}
-              value={this.state.settings.isAlert}
+              value={this.state.setting.isAlert}
             />
           </View>
         </View>
-        {this.state.settings.alerts.map((e, i) => {
+        {this.state.setting.alerts.map((e, i) => {
           return (
             <TouchableOpacity
               onPress={() => this.openTimePickerAndroid(e)}
@@ -407,7 +408,7 @@ class Setting extends React.PureComponent {
 
 function mapStateToProps(state, ownProps) {
   return {
-    settings: state.settings
+    setting: state.setting
   }
 }
 

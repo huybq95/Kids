@@ -57,12 +57,13 @@ class RootWithNavigationState extends Component {
 
   async componentWillMount() {
     let data = await db.getAllWords()
+    let setting = await db.getSetting()
     if (!data || data.length === 0) {
       console.log('no data')
       await db.initData()
     } else {
-      console.log('has data')
-      this.props.saveSetting(data)
+      console.log('has data', data)
+      this.props.saveSetting(setting)
       this.props.checkLearnedToday()
     }
   }

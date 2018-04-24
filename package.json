@@ -23,8 +23,7 @@
     "moment": "^2.20.1",
     "native-base": "^2.3.9",
     "react": "16.3.0-alpha.1",
-    "react-native":
-      "https://github.com/expo/react-native/archive/sdk-26.0.0.tar.gz",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-26.0.0.tar.gz",
     "react-native-action-button": "^2.8.4",
     "react-native-easy-toast": "^1.0.9",
     "react-native-floating-action": "^1.10.1",
