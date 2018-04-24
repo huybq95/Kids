@@ -140,9 +140,10 @@ class Setting extends React.PureComponent {
 
   changeWordCount(index) {
     this.props.showHideLoading(true, 'Cập nhật cài đặt...')
-    let value = NUMBERS_LIST[index] + ''
+    let wordCount = NUMBERS_LIST[index]
+    let newCount = parseInt((wordCount - 1) / 5) + 1
     this.setState(
-      { setting: { ...this.state.setting, wordCount: value } },
+      { setting: { ...this.state.setting, wordCount, newCount } },
       async () => {
         await this.saveSettingsToDB(this.state.setting)
       }
@@ -287,7 +288,7 @@ class Setting extends React.PureComponent {
           </View>
           <View style={styles.seperate} />
           <View style={styles.rowContainer}>
-            <Text style={styles.textLeft}>Số từ học/ ngày</Text>
+            <Text style={styles.textLeft}>Số từ học mỗi ngày</Text>
             <View style={styles.rightContainer}>
               <ModalDropdown
                 style={{ justifyContent: 'center', alignItems: 'center' }}
@@ -325,7 +326,7 @@ class Setting extends React.PureComponent {
             </View>
           </View>
           <View style={styles.seperate} />
-          <View style={styles.rowContainer}>
+          {/* <View style={styles.rowContainer}>
             <Text style={styles.textLeft}>Số từ mới/ ngày</Text>
             <View style={styles.rightContainer}>
               <ModalDropdown
@@ -362,7 +363,7 @@ class Setting extends React.PureComponent {
                 </View>
               </ModalDropdown>
             </View>
-          </View>
+          </View> */}
         </View>
         <View
           style={{
