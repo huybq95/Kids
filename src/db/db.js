@@ -672,16 +672,8 @@ export function createNewWord(word) {
   })
 }
 
-export function createTopic(title) {
-  return new Promise((resolve, reject) => {
-    db.update({ id: 'topic' }, { $push: { list: `${title}` } }, (err, res) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(res)
-      }
-    })
-  })
+export async function createTopic(title) {
+  await update({ id: 'topic' }, { $push: { list: `${title}` } })
 }
 
 export function updateWord(_id, updateQuery) {
@@ -753,4 +745,8 @@ export async function updateWordLesson(timeCompleted, wordListId) {
     { timeCompleted, type: 'history' },
     { $set: { words: wordListId } }
   )
+}
+
+export async function getTopicList() {
+  return await findOne({ id: 'topic' })
 }

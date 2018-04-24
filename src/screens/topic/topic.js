@@ -11,6 +11,7 @@ import {
   Keyboard,
   TextInput,
   Modal,
+  Alert,
   ActivityIndicator
 } from 'react-native'
 import { Card, CardItem, Body } from 'native-base'
@@ -101,17 +102,24 @@ class Topic extends React.PureComponent {
     this.refs.toast.show('Cant add topic !')
   }
 
-  createTopic = () => {
-    let title = this.state.newTopic ? this.state.newTopic : ''
-    db
-      .createTopic(title)
-      .then(() => {
-        this.loadData()
-        this.closeModal()
-      })
-      .catch(err => {
-        Alert.alert('', err.message)
-      })
+  createTopic = async () => {
+    let { newTopic } = this.state
+    if (newTopic && newTopic !== '') {
+      //check exist
+      let data = await db.getTopicList()
+      if (data && data.list) {
+        if (data.list.includes(newTopic)) {
+          Alert.alert('Lỗi', 'Chủ đề này đã tồn tại!')
+          return
+        } else {
+          await db.createTopic(newTopic)
+          this.loadData()
+          this.closeModal()
+        }
+      }
+    } else {
+      Alert.alert('Lỗi', 'Vui lòng nhập tên chủ đề mới!')
+    }
   }
 
   render() {

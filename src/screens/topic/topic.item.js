@@ -75,7 +75,6 @@ export class TopicItem extends React.PureComponent {
         },
         {
           text: 'Không',
-          onPress: () => console.log('Cancel Pressed'),
           style: 'cancel'
         }
       ],
